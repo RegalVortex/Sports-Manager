@@ -1,3 +1,3 @@
-public abstract class AbstractLeague {
+public abstract class AbstractLeague implements ILeague{
   
 }
