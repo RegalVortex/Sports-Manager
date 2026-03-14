@@ -1,3 +1,3 @@
-public abstract class AbstractPlayer {
+public abstract class AbstractPlayer implements IPlayer{
   
 }
