@@ -1,4 +1,4 @@
-public abstract class AbstractTeam {
+public abstract class AbstractTeam implements ITeam{
   
   
 }
