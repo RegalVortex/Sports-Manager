@@ -1,3 +1,3 @@
-public abstract class AbstractMatch implements IMatch{
+public abstract class AbstractMatch implements IMatch,ITactic{
   
 }
