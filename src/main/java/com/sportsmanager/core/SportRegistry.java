@@ -14,7 +14,7 @@ public class SportRegistry {
     }
 
     public void register(String name, SportFactory factory) {
-        if (name == null  name.isBlank()  factory == null) {
+        if (name == null || name.isBlank() || factory == null) {
             return;
         }
         registry.put(name, factory);
