@@ -45,8 +45,11 @@ public abstract class AbstractLeague implements ILeague {
     public List<IMatch> getFixturesForWeek(int week) {
         List<IMatch> weekly = new ArrayList<>();
         for (IMatch match : fixtures) {
-            if (match instanceof AbstractMatch abstractMatch && abstractMatch.getWeek() == week) {
-                weekly.add(match);
+            if (match instanceof AbstractMatch) {
+                AbstractMatch abstractMatch = (AbstractMatch) match;
+                if (abstractMatch.getWeek() == week) {
+                    weekly.add(match);
+                }
             }
         }
         return weekly;
@@ -104,7 +107,8 @@ public abstract class AbstractLeague implements ILeague {
     protected int calculateTotalWeeks() {
         int maxWeek = 0;
         for (IMatch match : fixtures) {
-            if (match instanceof AbstractMatch abstractMatch) {
+            if (match instanceof AbstractMatch) {
+                AbstractMatch abstractMatch = (AbstractMatch) match;
                 maxWeek = Math.max(maxWeek, abstractMatch.getWeek());
             }
         }
