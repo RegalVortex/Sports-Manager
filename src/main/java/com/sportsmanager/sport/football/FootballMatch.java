@@ -24,8 +24,8 @@ public class FootballMatch extends AbstractMatch {
 
         result = new MatchResult(homeTeam, awayTeam, homeScore, awayScore);
 
-        addEvent("Kick-off: " + homeTeam.getName() + " vs " + awayTeam.getName());
-        addEvent("Full Time: " + result.toString());
+        fireEvent("Kick-off: " + homeTeam.getName() + " vs " + awayTeam.getName());
+        fireEvent("Full Time: " + result.toString());
     }
 
     private int simulateTeamScore(ITeam attackingTeam, ITeam defendingTeam) {
@@ -60,7 +60,7 @@ public class FootballMatch extends AbstractMatch {
 
         ITactic tactic = team.getTactic();
         if (tactic != null) {
-            total = tactic.getAttackModifier();
+            total *= tactic.getAttackModifier();
         }
 
         return total / Math.max(1, lineup.size());
@@ -81,7 +81,7 @@ public class FootballMatch extends AbstractMatch {
 
         ITactic tactic = team.getTactic();
         if (tactic != null) {
-            total= tactic.getDefenseModifier();
+            total *= tactic.getDefenseModifier();
         }
 
         return total / Math.max(1, lineup.size());
@@ -99,7 +99,7 @@ public class FootballMatch extends AbstractMatch {
             if (chance < 3) {
                 int games = 1 + random.nextInt(4);
                 player.setInjured(games);
-                addEvent(player.getName() + " got injured for " + games + " game(s).");
+                fireEvent(player.getName() + " got injured for " + games + " game(s).");
             }
         }
     }
