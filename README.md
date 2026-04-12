@@ -2,7 +2,9 @@
 
 CE216 course project — Doç. Dr. Kaya Oğuz
 
-## Team WW3
+---
+
+## 👥 Team WW3
 
 | Member | Student ID |
 |--------|------------|
@@ -10,24 +12,23 @@ CE216 course project — Doç. Dr. Kaya Oğuz
 | İlker Gedik | 20230602026 |
 | Oğuz Kağan TEKİN | 20240602067 |
 
-## Current Status — M1 Complete
+---
 
-- Defined 8 core interfaces and 4 abstract classes
-- Created all 25 class and interface shells across core and football packages
-- Finalized three-layer architecture and package structure
-- Applied 5 design patterns: Factory, Singleton, Observer, Template Method, Strategy
-- Design and architecture document submitted
+## 🚀 Current Status — Milestone 2 Complete
 
-## Package Structure
-```
-com.sportsmanager.core               → Interfaces + abstract classes
-com.sportsmanager.sport.football     → Football-specific classes
-```
+- Implemented all interfaces and abstract classes defined in M1
+- Developed full football module as the first concrete sport
+- Created a minimal runnable simulation using `Main` class
+- Implemented **30+ meaningful unit tests** using JUnit 5
+- Integrated full Maven build system
+- Verified that the project runs successfully with:
+    - `mvn exec:java`
+    - `mvn test`
 
-## Milestones
+---
 
-| Milestone | Status |
-|-----------|--------|
-| M1 — Design & Architecture Document | ✅ Done |
-| M2 — Implementation + Unit Tests | ⏳ Planned |
-| M3 — Installer + Final Report | ⏳ Planned |
+## ▶️ How to Run
+
+### Run the simulation
+```bash
+mvn exec:java
