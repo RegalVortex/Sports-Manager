@@ -1,5 +1,8 @@
 package com.sportsmanager.core;
 
+import com.sportsmanager.sport.football.FootballSportFactory;
+import com.sportsmanager.sport.volleyball.VolleyballSportFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +14,10 @@ public class SportRegistry {
 
     public SportRegistry() {
         this.registry = new HashMap<>();
+
+        register("football", new FootballSportFactory());
+        register("volleyball", new VolleyballSportFactory());
+
     }
 
     public void register(String name, SportFactory factory) {
@@ -21,7 +28,8 @@ public class SportRegistry {
     }
 
     public SportFactory getFactory(String name) {
-        return registry.get(name);
+        if (name == null) return null;
+        return registry.get(name.toLowerCase());
     }
 
     public List<String> getAvailableSports() {
