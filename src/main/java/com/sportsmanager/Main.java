@@ -1,32 +1,86 @@
 package com.sportsmanager;
 
-import com.sportsmanager.core.IMatch;
-import com.sportsmanager.core.ITeam;
-import com.sportsmanager.core.MatchResult;
-import com.sportsmanager.core.SportFactory;
-import com.sportsmanager.sport.football.FootballSport;
+import com.sportsmanager.core.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
+
     public static void main(String[] args) {
-        FootballSport footballSport = new FootballSport();
-        SportFactory factory = footballSport.createFactory();
 
-        ITeam teamA = factory.createTeam("GS", "logoA.png");
-        ITeam teamB = factory.createTeam("FB", "logoB.png");
+        SportRegistry registry = new SportRegistry();
 
-        IMatch match = factory.createMatch(teamA, teamB, 1);
-        match.simulate();
+        // Burayı "football" veya "volleyball" yaparak test ediyoruz bu aşamada!!!!!
+        String selectedSport = "volleyball";
 
-        MatchResult result = match.getResult();
+        SportFactory factory = registry.getFactory(selectedSport);
 
-        System.out.println("Sports Manager M2 running...");
-        System.out.println("Sport: " + footballSport.getSportName());
-        System.out.println("Match Result: " + result);
+        if (factory == null) {
+            System.out.println("Invalid sport selected: " + selectedSport);
+            return;
+        }
 
+        ISport sport = factory.createSport();
+
+        List<ITeam> teams = new ArrayList<>();
+        teams.add(factory.createTeam("Team A", "logoA.png"));
+        teams.add(factory.createTeam("Team B", "logoB.png"));
+        teams.add(factory.createTeam("Team C", "logoC.png"));
+        teams.add(factory.createTeam("Team D", "logoD.png"));
+
+        ILeague league = factory.createLeague(sport.getSportName() + " League", teams);
+
+        System.out.println("=================================");
+        System.out.println("Sports Manager M3 League Simulation");
+        System.out.println("Sport: " + sport.getSportName());
+        System.out.println("League: " + league.getName());
+        System.out.println("Teams: " + league.getTeams().size());
+        System.out.println("=================================");
         System.out.println();
-        System.out.println("Match Commentary:");
-        for (String event : match.getCommentary()) {
-            System.out.println("- " + event);
+
+        while (!league.isSeasonOver()) {
+            int week = league.getCurrentWeek();
+
+            System.out.println("===== Week " + week + " =====");
+
+            List<IMatch> weeklyMatches = league.getFixturesForWeek(week);
+
+            league.advanceWeek();
+
+            for (IMatch match : weeklyMatches) {
+                MatchResult result = match.getResult();
+
+                if (result != null) {
+                    System.out.println(result);
+                }
+
+                for (String event : match.getCommentary()) {
+                    System.out.println("- " + event);
+                }
+
+                System.out.println();
+            }
+
+            printStandings(league);
+            System.out.println();
+        }
+
+        System.out.println("===== Season Finished =====");
+
+        ITeam champion = league.getChampion();
+        if (champion != null) {
+            System.out.println("Champion: " + champion.getName());
+        }
+    }
+
+    private static void printStandings(ILeague league) {
+        System.out.println("Current Standings:");
+
+        int rank = 1;
+        for (ITeam team : league.getStandings().getTeams()) {
+            System.out.println(rank + ". " + team.getName() + " - " + team.getPoints() + " pts");
+            rank++;
         }
     }
 }
