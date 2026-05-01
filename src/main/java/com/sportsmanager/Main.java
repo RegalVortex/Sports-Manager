@@ -29,8 +29,8 @@ public class Main {
         ISport sport = setup.getSport();
         ILeague league = setup.getLeague();
         ITeam playerTeam = setup.getPlayerTeam();
-
-        runDashboard(registry, sport, league, playerTeam);
+        SportFactory factory = registry.getFactory(selectedSport);
+        runDashboard(registry, factory, sport, league, playerTeam);
     }
 
     private static String chooseSport(SportRegistry registry) {
@@ -69,7 +69,7 @@ public class Main {
         return teams.get(choice - 1);
     }
 
-    private static void runDashboard(SportRegistry registry, ISport sport, ILeague league, ITeam playerTeam) {
+    private static void runDashboard(SportRegistry registry, SportFactory factory, ISport sport, ILeague league, ITeam playerTeam) {
         boolean running = true;
 
         while (running) {
@@ -87,11 +87,12 @@ public class Main {
             System.out.println("2. View Coach");
             System.out.println("3. View Standings");
             System.out.println("4. Next Week");
-            System.out.println("5. Save Game");
-            System.out.println("6. Load Game");
-            System.out.println("7. Exit");
+            System.out.println("5. Change Tactic");
+            System.out.println("6. Save Game");
+            System.out.println("7. Load Game");
+            System.out.println("8. Exit");
 
-            int choice = readChoice(1, 7);
+            int choice = readChoice(1, 8);
 
             if (choice == 1) {
                 showSquad(playerTeam);
@@ -105,10 +106,13 @@ public class Main {
             } else if (choice == 4) {
                 playNextWeek(league);
 
-            } else if (choice == 5) {
-                SaveLoadService.saveGame("savegame.dat", sport, league, playerTeam);
+            }else if (choice == 5) {
+                changeTactic(factory, playerTeam);
 
             } else if (choice == 6) {
+                SaveLoadService.saveGame("savegame.dat", sport, league, playerTeam);
+
+            } else if (choice == 7) {
                 LoadedGame loadedGame = SaveLoadService.loadGame("savegame.dat", registry);
 
                 if (loadedGame != null) {
@@ -119,13 +123,51 @@ public class Main {
                     System.out.println("Game loaded successfully.");
                 }
 
-            } else if (choice == 7) {
+            } else if (choice == 8) {
                 running = false;
                 System.out.println("Exiting Sports Manager...");
             }
         }
     }
 
+    private static void changeTactic(SportFactory factory, ITeam team) {
+        List<ITactic> tactics = factory.getAvailableTactics();
+
+        System.out.println("\n=== Change Tactic ===");
+        System.out.println("1. Defensive");
+        System.out.println("2. Balanced");
+        System.out.println("3. Aggressive");
+
+        int choice = readChoice(1, 3);
+
+        ITactic selectedTactic = null;
+
+        if (choice == 1) {
+            selectedTactic = findTactic(tactics, "5-3-2", "DEFENSIVE");
+        } else if (choice == 2) {
+            selectedTactic = findTactic(tactics, "4-4-2", "BALANCED");
+        } else if (choice == 3) {
+            selectedTactic = findTactic(tactics, "4-3-3", "OFFENSIVE");
+        }
+
+        if (selectedTactic != null) {
+            team.setTactic(selectedTactic);
+            System.out.println("Tactic changed to: " + selectedTactic.getName());
+        } else {
+            System.out.println("Tactic could not be changed.");
+        }
+    }
+
+    private static ITactic findTactic(List<ITactic> tactics, String... possibleNames) {
+        for (ITactic tactic : tactics) {
+            for (String name : possibleNames) {
+                if (tactic.getName().equalsIgnoreCase(name)) {
+                    return tactic;
+                }
+            }
+        }
+        return null;
+    }
     private static void showSquad(ITeam team) {
         System.out.println("\n=== Squad: " + team.getName() + " ===");
 
