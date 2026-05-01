@@ -114,5 +114,18 @@ public abstract class AbstractTeam implements ITeam {
         }
     }
 
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    public void clearSquad() {
+        this.squad.clear();
+        this.startingLineup.clear();
+    }
+
+    public void clearStartingLineup() {
+        this.startingLineup.clear();
+    }
+
     public abstract boolean validateLineup(List<IPlayer> chosen);
 }

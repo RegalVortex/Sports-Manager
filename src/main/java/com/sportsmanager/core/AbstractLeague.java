@@ -165,6 +165,10 @@ public abstract class AbstractLeague implements ILeague {
         return maxWeek;
     }
 
+    public void setCurrentWeek(int currentWeek) {
+        this.currentWeek = currentWeek;
+    }
+
     protected abstract IMatch createMatch(ITeam home, ITeam away, int week);
 
     protected abstract void applyMatchResult(IMatch match);

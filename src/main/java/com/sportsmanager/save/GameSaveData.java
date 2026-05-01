@@ -1,9 +1,10 @@
 package com.sportsmanager.save;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GameSaveData {
+public class GameSaveData implements Serializable {
 
     private String sportName;
     private String leagueName;

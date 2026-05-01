@@ -1,6 +1,8 @@
 package com.sportsmanager;
 
 import com.sportsmanager.core.*;
+import com.sportsmanager.save.LoadedGame;
+import com.sportsmanager.save.SaveLoadService;
 import com.sportsmanager.setup.GameSetupService;
 import com.sportsmanager.setup.LeaguePreset;
 import com.sportsmanager.setup.PresetData;
@@ -28,7 +30,7 @@ public class Main {
         ILeague league = setup.getLeague();
         ITeam playerTeam = setup.getPlayerTeam();
 
-        runDashboard(sport, league, playerTeam);
+        runDashboard(registry, sport, league, playerTeam);
     }
 
     private static String chooseSport(SportRegistry registry) {
@@ -67,7 +69,7 @@ public class Main {
         return teams.get(choice - 1);
     }
 
-    private static void runDashboard(ISport sport, ILeague league, ITeam playerTeam) {
+    private static void runDashboard(SportRegistry registry, ISport sport, ILeague league, ITeam playerTeam) {
         boolean running = true;
 
         while (running) {
@@ -85,19 +87,39 @@ public class Main {
             System.out.println("2. View Coach");
             System.out.println("3. View Standings");
             System.out.println("4. Next Week");
-            System.out.println("5. Exit");
+            System.out.println("5. Save Game");
+            System.out.println("6. Load Game");
+            System.out.println("7. Exit");
 
-            int choice = readChoice(1, 5);
+            int choice = readChoice(1, 7);
 
             if (choice == 1) {
                 showSquad(playerTeam);
+
             } else if (choice == 2) {
                 showCoach(playerTeam);
+
             } else if (choice == 3) {
                 printStandings(league);
+
             } else if (choice == 4) {
                 playNextWeek(league);
+
             } else if (choice == 5) {
+                SaveLoadService.saveGame("savegame.dat", sport, league, playerTeam);
+
+            } else if (choice == 6) {
+                LoadedGame loadedGame = SaveLoadService.loadGame("savegame.dat", registry);
+
+                if (loadedGame != null) {
+                    sport = loadedGame.getSport();
+                    league = loadedGame.getLeague();
+                    playerTeam = loadedGame.getPlayerTeam();
+
+                    System.out.println("Game loaded successfully.");
+                }
+
+            } else if (choice == 7) {
                 running = false;
                 System.out.println("Exiting Sports Manager...");
             }

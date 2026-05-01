@@ -94,5 +94,12 @@ public abstract class AbstractMatch implements IMatch {
 
     protected abstract void simulateMatch();
 
+
+
+    public void restoreResult(MatchResult result) {
+        this.result = result;
+        this.played = true;
+    }
+
     protected abstract void applyInjuries();
 }
