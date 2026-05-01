@@ -60,24 +60,32 @@ public abstract class AbstractTeam implements ITeam {
         this.tactic = tactic;
     }
 
-    @Override
-    public void substitutePlayer(IPlayer out, IPlayer in) {
-        if (out == null || in == null) {
-            return;
-        }
-        if (!startingLineup.contains(out)) {
-            return;
-        }
-        if (!squad.contains(in)) {
-            return;
-        }
-        if (in.isInjured()) {
-            return;
-        }
-
-        int index = startingLineup.indexOf(out);
-        startingLineup.set(index, in);
+@Override
+public void substitutePlayer(IPlayer out, IPlayer in) {
+    if (out == null || in == null) {
+        return;
     }
+    if (!startingLineup.contains(out)) {
+        return;
+    }
+    if (!squad.contains(in)) {
+        return;
+    }
+    if (startingLineup.contains(in)) {
+        return;
+    }
+    if (in.isInjured()) {
+        return;
+    }
+
+    List<IPlayer> candidateLineup = new ArrayList<>(startingLineup);
+    int index = candidateLineup.indexOf(out);
+    candidateLineup.set(index, in);
+
+    if (validateLineup(candidateLineup)) {
+        this.startingLineup = candidateLineup;
+    }
+}
 
     @Override
     public void addPoints(int points) {
