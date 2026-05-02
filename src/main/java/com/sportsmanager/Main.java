@@ -105,7 +105,7 @@ public class Main {
                 printStandings(league);
 
             } else if (choice == 4) {
-                playNextWeek(league);
+                playNextWeek(league, playerTeam);
 
             }else if (choice == 5) {
                 changeTactic(factory, playerTeam);
@@ -193,7 +193,7 @@ public class Main {
         System.out.println("Specialty: " + coach.getSpecialty());
     }
 
-    private static void playNextWeek(ILeague league) {
+    private static void playNextWeek(ILeague league, ITeam playerTeam) {
         if (league.isSeasonOver()) {
             System.out.println("\nSeason is already over.");
 
@@ -207,15 +207,25 @@ public class Main {
         int week = league.getCurrentWeek();
         List<IMatch> weeklyMatches = league.getFixturesForWeek(week);
 
+        int injuredBefore = countTotalInjuredPlayers(league);
+
         System.out.println("\n========== WEEK " + week + " ==========");
 
+        showMatchPreview(weeklyMatches, playerTeam);
+
         league.advanceWeek();
+
+        MatchResult playerTeamResult = null;
 
         for (IMatch match : weeklyMatches) {
             MatchResult result = match.getResult();
 
             if (result != null) {
                 System.out.println(result);
+
+                if (result.getHomeTeam().equals(playerTeam) || result.getAwayTeam().equals(playerTeam)) {
+                    playerTeamResult = result;
+                }
             }
 
             for (String event : match.getCommentary()) {
@@ -226,6 +236,72 @@ public class Main {
         }
 
         printStandings(league);
+
+        int injuredAfter = countTotalInjuredPlayers(league);
+        int newInjuries = Math.max(0, injuredAfter - injuredBefore);
+
+        showWeeklySummary(league, playerTeam, playerTeamResult, newInjuries);
+    }
+
+    private static int countTotalInjuredPlayers(ILeague league) {
+        int count = 0;
+
+        for (ITeam team : league.getTeams()) {
+            count += countInjuredPlayers(team);
+        }
+
+        return count;
+    }
+    private static void showWeeklySummary(ILeague league, ITeam playerTeam, MatchResult playerTeamResult, int newInjuries) {
+        System.out.println("\n=== Weekly Summary ===");
+
+        if (playerTeamResult != null) {
+            System.out.println("Your Result: " + playerTeamResult);
+        } else {
+            System.out.println("Your Team did not play this week.");
+        }
+
+        int rank = league.getStandings().getRankOf(playerTeam);
+
+        System.out.println("League Position: " + rank);
+        System.out.println("New Injuries This Week: " + newInjuries);
+        System.out.println("Next Week: " + league.getCurrentWeek());
+        System.out.println("======================");
+    }
+    private static void showMatchPreview(List<IMatch> weeklyMatches, ITeam playerTeam) {
+        for (IMatch match : weeklyMatches) {
+            boolean playerTeamIsHome = match.getHomeTeam().equals(playerTeam);
+            boolean playerTeamIsAway = match.getAwayTeam().equals(playerTeam);
+
+            if (playerTeamIsHome || playerTeamIsAway) {
+                ITeam opponent = playerTeamIsHome ? match.getAwayTeam() : match.getHomeTeam();
+
+                System.out.println("\n--- Match Preview ---");
+                System.out.println("Your Team: " + playerTeam.getName());
+                System.out.println("Opponent: " + opponent.getName());
+                System.out.println("Opponent Points: " + opponent.getPoints());
+                System.out.println("Your Tactic: " + playerTeam.getTactic().getName());
+                System.out.println("Your Injured Players: " + countInjuredPlayers(playerTeam));
+                System.out.println("Opponent Injured Players: " + countInjuredPlayers(opponent));
+                System.out.println("---------------------\n");
+
+                return;
+            }
+        }
+
+        System.out.println("\nNo match for your team this week.\n");
+    }
+
+    private static int countInjuredPlayers(ITeam team) {
+        int count = 0;
+
+        for (IPlayer player : team.getSquad()) {
+            if (player.isInjured()) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private static void manageLineup(ITeam team) {
