@@ -81,17 +81,40 @@ public abstract class AbstractMatch implements IMatch {
     }
 
     @Override
-    public final void simulate() {
-        if (played) {
-            return;
-        }
-
-        simulateMatch();
-        applyInjuries();
-        played = true;
-        notifyListeners();
+public final void simulate() {
+    if (played) {
+        return;
     }
 
+    simulateMatch();
+    applyInjuries();
+
+    updatePlayerForm(homeTeam);
+    updatePlayerForm(awayTeam);
+
+    played = true;
+    notifyListeners();
+}
+    protected void updatePlayerForm(ITeam team) {
+    java.util.Random random = new java.util.Random();
+
+    for (IPlayer player : team.getStartingLineup()) {
+
+        int oldForm = player.getForm();
+        int roll = random.nextInt(100);
+
+        if (roll < 30 && oldForm > 0) {
+            player.setForm(oldForm - 1);
+            fireEvent(player.getName() + " form dropped to " + player.getFormLabel());
+        }
+
+        else if (roll > 70 && oldForm < 3) {
+            player.setForm(oldForm + 1);
+            fireEvent(player.getName() + " form improved to " + player.getFormLabel());
+        }
+    }
+}
+    
     protected abstract void simulateMatch();
 
     protected abstract void applyInjuries();
