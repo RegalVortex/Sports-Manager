@@ -9,6 +9,7 @@ public abstract class AbstractPlayer implements IPlayer {
     protected Map<String, Integer> attributes;
     protected boolean injured;
     protected int injuryGamesRemaining;
+    protected int form;
 
     public AbstractPlayer(String name, String position) {
         this.name = name;
@@ -16,6 +17,7 @@ public abstract class AbstractPlayer implements IPlayer {
         this.attributes = new HashMap<>();
         this.injured = false;
         this.injuryGamesRemaining = 0;
+        this.form = 1; 
 
     }
 
@@ -43,6 +45,28 @@ public abstract class AbstractPlayer implements IPlayer {
     public int getInjuryGamesRemaining() {
         return injuryGamesRemaining;
     }
+
+    @Override
+ 
+    public int getForm() {
+    return form;
+    }
+    
+    @Override
+    public void setForm(int form) {
+    if (form < 0) form = 0;
+    if (form > 3) form = 3;
+    this.form = form;
+    }
+    @Override
+    public String getFormLabel() {
+    switch (form) {
+        case 0: return "Bad";
+        case 2: return "Good";
+        case 3: return "Excellent";
+        default: return "Normal";
+    }
+}
 
     @Override
     public void setInjured(int games) {
