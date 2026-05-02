@@ -180,6 +180,7 @@ public class Main {
                     "- " + player.getName()
                             + " | " + player.getPosition()
                             + " | OVR: " + player.getOverallRating()
+                            + " | Form: " + player.getFormLabel()
                             + " | Injured: " + player.isInjured()
             );
         }
