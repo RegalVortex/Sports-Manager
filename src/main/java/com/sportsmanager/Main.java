@@ -88,11 +88,12 @@ public class Main {
             System.out.println("3. View Standings");
             System.out.println("4. Next Week");
             System.out.println("5. Change Tactic");
-            System.out.println("6. Save Game");
-            System.out.println("7. Load Game");
-            System.out.println("8. Exit");
+            System.out.println("6. Manage Lineup");
+            System.out.println("7. Save Game");
+            System.out.println("8. Load Game");
+            System.out.println("9. Exit");
 
-            int choice = readChoice(1, 8);
+            int choice = readChoice(1, 9);
 
             if (choice == 1) {
                 showSquad(playerTeam);
@@ -109,10 +110,13 @@ public class Main {
             }else if (choice == 5) {
                 changeTactic(factory, playerTeam);
 
-            } else if (choice == 6) {
+            }  else if (choice == 6) {
+                manageLineup(playerTeam);
+
+            }else if (choice == 7) {
                 SaveLoadService.saveGame("savegame.dat", sport, league, playerTeam);
 
-            } else if (choice == 7) {
+            } else if (choice == 8) {
                 LoadedGame loadedGame = SaveLoadService.loadGame("savegame.dat", registry);
 
                 if (loadedGame != null) {
@@ -123,7 +127,7 @@ public class Main {
                     System.out.println("Game loaded successfully.");
                 }
 
-            } else if (choice == 8) {
+            } else if (choice == 9) {
                 running = false;
                 System.out.println("Exiting Sports Manager...");
             }
@@ -224,6 +228,62 @@ public class Main {
         printStandings(league);
     }
 
+    private static void manageLineup(ITeam team) {
+        System.out.println("\n=== Manage Lineup ===");
+
+        List<IPlayer> lineup = team.getStartingLineup();
+        List<IPlayer> squad = team.getSquad();
+
+        System.out.println("\nStarting Lineup:");
+        for (int i = 0; i < lineup.size(); i++) {
+            IPlayer player = lineup.get(i);
+            System.out.println((i + 1) + ". " + player.getName()
+                    + " | " + player.getPosition()
+                    + " | OVR: " + player.getOverallRating()
+                    + " | Injured: " + player.isInjured());
+        }
+
+        List<IPlayer> bench = new java.util.ArrayList<>();
+
+        for (IPlayer player : squad) {
+            if (!lineup.contains(player)) {
+                bench.add(player);
+            }
+        }
+
+        System.out.println("\nBench:");
+        for (int i = 0; i < bench.size(); i++) {
+            IPlayer player = bench.get(i);
+            System.out.println((i + 1) + ". " + player.getName()
+                    + " | " + player.getPosition()
+                    + " | OVR: " + player.getOverallRating()
+                    + " | Injured: " + player.isInjured());
+        }
+
+        if (bench.isEmpty()) {
+            System.out.println("No bench players available.");
+            return;
+        }
+
+        System.out.println("\nSelect player OUT from starting lineup:");
+        int outChoice = readChoice(1, lineup.size());
+
+        System.out.println("Select player IN from bench:");
+        int inChoice = readChoice(1, bench.size());
+
+        IPlayer outPlayer = lineup.get(outChoice - 1);
+        IPlayer inPlayer = bench.get(inChoice - 1);
+
+        String beforeOutName = outPlayer.getName();
+
+        team.substitutePlayer(outPlayer, inPlayer);
+
+        if (team.getStartingLineup().contains(inPlayer) && !team.getStartingLineup().contains(outPlayer)) {
+            System.out.println("Substitution successful: " + beforeOutName + " OUT, " + inPlayer.getName() + " IN");
+        } else {
+            System.out.println("Substitution failed. The lineup rules may have been violated.");
+        }
+    }
     private static void printStandings(ILeague league) {
         System.out.println("\n=== Standings ===");
 
