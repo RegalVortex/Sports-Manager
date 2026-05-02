@@ -15,9 +15,15 @@ public interface IPlayer {
 
     int getInjuryGamesRemaining();
 
+    int getForm();
+
+    String getFormLabel();
+
     void setInjured(int games);
 
     void decrementInjury();
 
     void train(String attribute, int amount);
+
+    void setForm(int form);
 }
