@@ -8,11 +8,13 @@ import com.sportsmanager.setup.LeaguePreset;
 import com.sportsmanager.setup.PresetData;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
+    private static final List<String> newsFeed = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -82,7 +84,7 @@ public class Main {
             System.out.println("Tactic: " + playerTeam.getTactic().getName());
             System.out.println("Current Week: " + league.getCurrentWeek());
             System.out.println("=================================");
-
+            showNewsFeed();
             System.out.println("1. View Squad");
             System.out.println("2. View Coach");
             System.out.println("3. View Standings");
@@ -241,9 +243,65 @@ public class Main {
         int injuredAfter = countTotalInjuredPlayers(league);
         int newInjuries = Math.max(0, injuredAfter - injuredBefore);
 
+        generateNews(league, playerTeam, playerTeamResult, newInjuries);
         showWeeklySummary(league, playerTeam, playerTeamResult, newInjuries);
     }
+    private static void generateNews(ILeague league, ITeam playerTeam, MatchResult playerTeamResult, int newInjuries) {
+        List<ITeam> rankedTeams = league.getStandings().getTeams();
 
+        if (rankedTeams.isEmpty()) {
+            return;
+        }
+
+        ITeam leader = rankedTeams.get(0);
+        ITeam lastTeam = rankedTeams.get(rankedTeams.size() - 1);
+
+        newsFeed.add(leader.getName() + " is currently leading " + league.getName() + ".");
+
+        if (lastTeam.getPoints() == 0) {
+            newsFeed.add(lastTeam.getName() + " is still searching for their first points.");
+        }
+
+        int playerRank = league.getStandings().getRankOf(playerTeam);
+        newsFeed.add(playerTeam.getName() + " is currently ranked " + playerRank + " in the league.");
+
+        if (playerTeamResult != null) {
+            if (playerTeamResult.getWinner() == null) {
+                newsFeed.add(playerTeam.getName() + " earned a draw this week.");
+            } else if (playerTeamResult.getWinner().equals(playerTeam)) {
+                newsFeed.add(playerTeam.getName() + " won an important match this week.");
+            } else {
+                newsFeed.add(playerTeam.getName() + " lost this week and needs to recover.");
+            }
+        }
+
+        if (newInjuries > 0) {
+            newsFeed.add("Injury update: " + newInjuries + " new player(s) got injured this week.");
+        }
+
+        trimNewsFeed();
+    }
+
+    private static void trimNewsFeed() {
+        while (newsFeed.size() > 20) {
+            newsFeed.remove(0);
+        }
+    }
+
+    private static void showNewsFeed() {
+        System.out.println("\n--- News ---");
+
+        if (newsFeed.isEmpty()) {
+            System.out.println("No news yet.");
+            return;
+        }
+
+        int start = Math.max(0, newsFeed.size() - 5);
+
+        for (int i = start; i < newsFeed.size(); i++) {
+            System.out.println("- " + newsFeed.get(i));
+        }
+    }
     private static int countTotalInjuredPlayers(ILeague league) {
         int count = 0;
 
