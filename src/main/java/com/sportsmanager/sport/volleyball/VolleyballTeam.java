@@ -70,7 +70,7 @@ public class VolleyballTeam extends AbstractTeam {
 
         team.setStartingLineup(firstSix);
         team.setTactic(new VolleyballTactic("BALANCED"));
-        team.setCoach(new VolleyballCoach(name + " Coach", "ATTACKING"));
+        team.setCoach(new VolleyballCoach(name + " Coach", "OFFENSIVE"));
 
         return team;
     }

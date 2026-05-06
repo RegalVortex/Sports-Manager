@@ -169,6 +169,15 @@ public abstract class AbstractLeague implements ILeague {
         this.currentWeek = currentWeek;
     }
 
+    public void resetSeason() {
+        for (ITeam team : teams) {
+            team.resetPoints();
+        }
+        currentWeek = 1;
+        generateFixtures();
+        totalWeeks = calculateTotalWeeks();
+    }
+
     protected abstract IMatch createMatch(ITeam home, ITeam away, int week);
 
     protected abstract void applyMatchResult(IMatch match);

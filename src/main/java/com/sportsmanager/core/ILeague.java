@@ -21,4 +21,6 @@ String getName();
     boolean isSeasonOver();
 
     ITeam getChampion();
+
+    void resetSeason();
 }

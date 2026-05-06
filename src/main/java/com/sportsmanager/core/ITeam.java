@@ -21,5 +21,9 @@ public interface ITeam {
     void addPoints(int points);
 
     int getPoints();
+
+    void setCoach(ICoach coach);
+
+    void resetPoints();
    
 }

@@ -126,6 +126,11 @@ public void substitutePlayer(IPlayer out, IPlayer in) {
         this.points = points;
     }
 
+    @Override
+    public void resetPoints() {
+        this.points = 0;
+    }
+
     public void clearSquad() {
         this.squad.clear();
         this.startingLineup.clear();

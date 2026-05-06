@@ -35,6 +35,10 @@ public class Main {
         ILeague league = setup.getLeague();
         ITeam playerTeam = setup.getPlayerTeam();
         SportFactory factory = registry.getFactory(selectedSport);
+        GameContext.getInstance().startNewGame(sport);
+        GameContext.getInstance().setLeague(league);
+        GameContext.getInstance().setPlayerTeam(playerTeam);
+
         runDashboard(registry, factory, sport, league, playerTeam);
     }
 
@@ -80,6 +84,7 @@ public class Main {
         while (running) {
             System.out.println("\n=================================");
             System.out.println("Sports Manager M3 Dashboard");
+            System.out.println("Season: " + GameContext.getInstance().getCurrentSeason());
             System.out.println("Sport: " + sport.getSportName());
             System.out.println("League: " + league.getName());
             System.out.println("Your Team: " + playerTeam.getName());
@@ -201,11 +206,23 @@ public class Main {
 
     private static void playNextWeek(ILeague league, ITeam playerTeam) {
         if (league.isSeasonOver()) {
-            System.out.println("\nSeason is already over.");
-
             ITeam champion = league.getChampion();
+
+            System.out.println("\n========== SEASON OVER ==========");
             if (champion != null) {
-                System.out.println("Champion: " + champion.getName());
+                System.out.println("CHAMPION: " + champion.getName() + "!");
+            }
+            printStandings(league);
+            System.out.println("=================================");
+            System.out.println("\n1. Start New Season");
+            System.out.println("2. Return to Menu");
+
+            int choice = readChoice(1, 2);
+            if (choice == 1) {
+                league.resetSeason();
+                newsFeed.clear();
+                GameContext.getInstance().nextSeason();
+                System.out.println("\nSeason " + GameContext.getInstance().getCurrentSeason() + " started!");
             }
             return;
         }
