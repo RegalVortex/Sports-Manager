@@ -15,6 +15,15 @@ public class FootballPlayer extends AbstractPlayer {
         attributes.put("heading", 50);
         attributes.put("stamina", 50);
     }
+    public FootballPlayer(String name, String position, int age, int potential) {
+        super(name, position, age, potential);
+        attributes.put("pace", 50);
+        attributes.put("shooting", 50);
+        attributes.put("passing", 50);
+        attributes.put("defending", 50);
+        attributes.put("heading", 50);
+        attributes.put("stamina", 50);
+    }
 
     @Override
     public int getOverallRating() {
@@ -41,15 +50,19 @@ public class FootballPlayer extends AbstractPlayer {
     }
 
     public static FootballPlayer generateRandom(String position, String name) {
-        FootballPlayer player = new FootballPlayer(name, position);
         Random random = new Random();
 
-        player.attributes.put("pace", 50 + random.nextInt(41));
-        player.attributes.put("shooting", 50 + random.nextInt(41));
-        player.attributes.put("passing", 50 + random.nextInt(41));
+        int age = 17 + random.nextInt(19);          // 17–35 arası
+        int potential = 65 + random.nextInt(35);     // 65–99 arası
+
+        FootballPlayer player = new FootballPlayer(name, position, age, potential);
+
+        player.attributes.put("pace",      50 + random.nextInt(41));
+        player.attributes.put("shooting",  50 + random.nextInt(41));
+        player.attributes.put("passing",   50 + random.nextInt(41));
         player.attributes.put("defending", 50 + random.nextInt(41));
-        player.attributes.put("heading", 50 + random.nextInt(41));
-        player.attributes.put("stamina", 50 + random.nextInt(41));
+        player.attributes.put("heading",   50 + random.nextInt(41));
+        player.attributes.put("stamina",   50 + random.nextInt(41));
 
         return player;
     }

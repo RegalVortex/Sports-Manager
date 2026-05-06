@@ -10,17 +10,50 @@ public abstract class AbstractPlayer implements IPlayer {
     protected boolean injured;
     protected int injuryGamesRemaining;
     protected int form;
+    protected int age;
+    protected int potential;
+
+
 
     public AbstractPlayer(String name, String position) {
+        this(name, position, 23, 75);
+
+    }
+
+    public AbstractPlayer(String name, String position, int age, int potential) {
         this.name = name;
         this.position = position;
         this.attributes = new HashMap<>();
         this.injured = false;
         this.injuryGamesRemaining = 0;
-        this.form = 1; 
-
+        this.form = 1;
+        this.age = age;
+        this.potential = Math.min(Math.max(potential, 50), 99);
     }
 
+    @Override
+    public void growOlder() {
+        age++;
+
+        // 30 yaş ve üzeri: her attribute 1-2 puan düşer
+        if (age >= 30) {
+            int decay = (age >= 33) ? 2 : 1;
+            for (String key : attributes.keySet()) {
+                int current = attributes.get(key);
+                attributes.put(key, Math.max(0, current - decay));
+            }
+        }
+    }
+
+    @Override
+    public int getAge() {
+        return age;
+    }
+
+    @Override
+    public int getPotential() {
+        return potential;
+    }
     @Override
     public String getName() {
         return name;
@@ -95,22 +128,36 @@ public abstract class AbstractPlayer implements IPlayer {
 
     @Override
     public void train(String attribute, int amount) {
-        if (attribute==null||attribute.isBlank()){
+        if (attribute == null || attribute.isBlank()) {
             return;
         }
 
-        int currentValue=attributes.getOrDefault(attribute,50);
-         int newValue=currentValue+amount;
+        int currentValue = attributes.getOrDefault(attribute, 50);
 
-         if (newValue<0){
-             newValue=0;
-         }
-         if (newValue>100){
-             newValue=100;
-         }
-         attributes.put(attribute,newValue);
+        // Genç oyuncular (23 yaş altı) potential'e göre bonus alır
+        int effectiveAmount = amount;
+        if (age <= 23) {
+            double potentialBonus = (potential - getOverallRating()) / 50.0;
+            effectiveAmount = (int) Math.ceil(amount * (1.0 + potentialBonus));
+        }
+
+        int newValue = currentValue + effectiveAmount;
+
+        // Potential'i aşamasın
+        int cap = Math.min(potential, 100);
+        if (newValue > cap) newValue = cap;
+        if (newValue < 0) newValue = 0;
+
+        attributes.put(attribute, newValue);
     }
 
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public void setPotential(int potential) {
+        this.potential = Math.min(Math.max(potential, 50), 99);
+    }
     @Override
     public int getOverallRating() {
        if (attributes.isEmpty()){

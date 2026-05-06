@@ -51,12 +51,34 @@ public class VolleyballLeague extends AbstractLeague {
     @Override
     public LeagueStandings getStandings() {
         List<ITeam> ranked = new ArrayList<>(teams);
-        ranked.sort(
-                Comparator.comparingInt(ITeam::getPoints)
-                        .reversed()
-                        .thenComparing(ITeam::getName)
-        );
+        ranked.sort((a, b) -> {
+            if (b.getPoints() != a.getPoints()) {
+                return b.getPoints() - a.getPoints();
+            }
+            int sdDiff = getSetDifference(b) - getSetDifference(a);
+            if (sdDiff != 0) {
+                return sdDiff;
+            }
+            return a.getName().compareTo(b.getName());
+        });
         return new LeagueStandings(ranked);
+    }
+
+    private int getSetDifference(ITeam team) {
+        int setsWon = 0;
+        int setsLost = 0;
+        for (IMatch match : fixtures) {
+            MatchResult result = match.getResult();
+            if (result == null) continue;
+            if (result.getHomeTeam().equals(team)) {
+                setsWon += result.getHomeScore();
+                setsLost += result.getAwayScore();
+            } else if (result.getAwayTeam().equals(team)) {
+                setsWon += result.getAwayScore();
+                setsLost += result.getHomeScore();
+            }
+        }
+        return setsWon - setsLost;
     }
 
     @Override

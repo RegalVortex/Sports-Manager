@@ -43,7 +43,9 @@ public class SaveLoadService {
                         player.getAttributes(),
                         player.isInjured(),
                         player.getInjuryGamesRemaining(),
-                        player.getForm()          // <-- bunu ekle
+                        player.getForm(),
+                        player.getAge(),        // YENİ
+                        player.getPotential()   // YENİ
                 );
                 savedPlayers.add(savedPlayer);
             }
@@ -126,7 +128,15 @@ public class SaveLoadService {
                     } else {
                         player.setInjured(0);
                     }
-                    player.setForm(savedPlayer.getForm());   // <-- bunu ekle
+                    player.setForm(savedPlayer.getForm());
+
+// YENİ — age ve potential restore
+                    if (player instanceof AbstractPlayer) {
+                        AbstractPlayer abstractPlayer = (AbstractPlayer) player;
+                        abstractPlayer.setAge(savedPlayer.getAge());
+                        abstractPlayer.setPotential(savedPlayer.getPotential());
+                    }
+                    // <-- bunu ekle
 
                     abstractTeam.addPlayerToSquad(player);
                 }

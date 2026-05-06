@@ -5,6 +5,12 @@ import java.util.Map;
 public interface IPlayer {
     String getName();
 
+    int getAge();
+
+    int getPotential();
+
+    void growOlder();
+
     String getPosition();
 
     Map<String, Integer> getAttributes();

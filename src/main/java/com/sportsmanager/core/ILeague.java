@@ -23,4 +23,8 @@ String getName();
     ITeam getChampion();
 
     void resetSeason();
+
+    int getWins(ITeam team);
+    int getDraws(ITeam team);
+    int getLosses(ITeam team);
 }

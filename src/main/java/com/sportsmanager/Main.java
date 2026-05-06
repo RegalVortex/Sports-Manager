@@ -189,9 +189,11 @@ public class Main {
             System.out.println(
                     "- " + player.getName()
                             + " | " + player.getPosition()
+                            + " | Age: " + player.getAge()
+                            + " | POT: " + player.getPotential()
                             + " | OVR: " + player.getOverallRating()
                             + " | Form: " + player.getFormLabel()
-                            + " | Injured: " + player.isInjured()
+                            + (player.isInjured() ? " | INJURED (" + player.getInjuryGamesRemaining() + " wks)" : "")
             );
         }
     }
@@ -394,8 +396,9 @@ public class Main {
             IPlayer player = lineup.get(i);
             System.out.println((i + 1) + ". " + player.getName()
                     + " | " + player.getPosition()
+                    + " | Age: " + player.getAge()
                     + " | OVR: " + player.getOverallRating()
-                    + " | Injured: " + player.isInjured());
+                    + (player.isInjured() ? " | INJURED" : ""));
         }
 
         List<IPlayer> bench = new java.util.ArrayList<>();
@@ -411,8 +414,9 @@ public class Main {
             IPlayer player = bench.get(i);
             System.out.println((i + 1) + ". " + player.getName()
                     + " | " + player.getPosition()
+                    + " | Age: " + player.getAge()
                     + " | OVR: " + player.getOverallRating()
-                    + " | Injured: " + player.isInjured());
+                    + (player.isInjured() ? " | INJURED" : ""));
         }
 
         if (bench.isEmpty()) {
@@ -441,10 +445,17 @@ public class Main {
     }
     private static void printStandings(ILeague league) {
         System.out.println("\n=== Standings ===");
+        System.out.printf("%-4s %-26s %-5s %-5s %-5s %-6s%n",
+                "Pos", "Team", "W", "D", "L", "Pts");
+        System.out.println("--------------------------------------------------");
 
         int rank = 1;
         for (ITeam team : league.getStandings().getTeams()) {
-            System.out.println(rank + ". " + team.getName() + " - " + team.getPoints() + " pts");
+            int w = league.getWins(team);
+            int d = league.getDraws(team);
+            int l = league.getLosses(team);
+            System.out.printf("%-4d %-26s %-5d %-5d %-5d %-6d%n",
+                    rank, team.getName(), w, d, l, team.getPoints());
             rank++;
         }
     }

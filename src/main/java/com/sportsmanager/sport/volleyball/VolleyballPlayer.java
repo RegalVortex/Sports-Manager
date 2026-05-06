@@ -16,6 +16,16 @@ public class VolleyballPlayer extends AbstractPlayer {
         attributes.put("stamina", 50);
     }
 
+    public VolleyballPlayer(String name, String position, int age, int potential) {
+        super(name, position, age, potential);
+        attributes.put("serve", 50);
+        attributes.put("spike", 50);
+        attributes.put("block", 50);
+        attributes.put("receive", 50);
+        attributes.put("set", 50);
+        attributes.put("stamina", 50);
+    }
+
     @Override
     public int getOverallRating() {
         int serve = attributes.getOrDefault("serve", 50);
@@ -45,15 +55,19 @@ public class VolleyballPlayer extends AbstractPlayer {
     }
 
     public static VolleyballPlayer generateRandom(String position, String name) {
-        VolleyballPlayer player = new VolleyballPlayer(name, position);
         Random random = new Random();
 
-        player.attributes.put("serve", 50 + random.nextInt(41));
-        player.attributes.put("spike", 50 + random.nextInt(41));
-        player.attributes.put("block", 50 + random.nextInt(41));
-        player.attributes.put("receive", 50 + random.nextInt(41));
-        player.attributes.put("set", 50 + random.nextInt(41));
-        player.attributes.put("stamina", 50 + random.nextInt(41));
+        int age = 17 + random.nextInt(19);          // 17–35 arası
+        int potential = 65 + random.nextInt(35);     // 65–99 arası
+
+        VolleyballPlayer player = new VolleyballPlayer(name, position, age, potential);
+
+        player.attributes.put("serve",    50 + random.nextInt(41));
+        player.attributes.put("spike",    50 + random.nextInt(41));
+        player.attributes.put("block",    50 + random.nextInt(41));
+        player.attributes.put("receive",  50 + random.nextInt(41));
+        player.attributes.put("set",      50 + random.nextInt(41));
+        player.attributes.put("stamina",  50 + random.nextInt(41));
 
         return player;
     }

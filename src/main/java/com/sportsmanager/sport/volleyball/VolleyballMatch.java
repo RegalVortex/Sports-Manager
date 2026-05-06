@@ -47,6 +47,8 @@ public class VolleyballMatch extends AbstractMatch {
         fireEvent("Full Time: " + result.toString());
     }
 
+
+
     private int[] simulateSet(ITeam teamA, ITeam teamB, boolean finalSet) {
         double teamAStrength = calculateAttackPower(teamA) + calculateDefensePower(teamA);
         double teamBStrength = calculateAttackPower(teamB) + calculateDefensePower(teamB);
@@ -83,9 +85,10 @@ public class VolleyballMatch extends AbstractMatch {
 
         double total = 0;
         for (IPlayer player : lineup) {
-            total += player.getAttributes().getOrDefault("spike", 50);
-            total += player.getAttributes().getOrDefault("serve", 50);
-            total += player.getAttributes().getOrDefault("set", 50);
+            double formMult = getFormMultiplier(player);
+            total += player.getAttributes().getOrDefault("spike", 50) * formMult;
+            total += player.getAttributes().getOrDefault("serve", 50) * formMult;
+            total += player.getAttributes().getOrDefault("set", 50) * formMult;
         }
 
         ITactic tactic = team.getTactic();
@@ -104,9 +107,10 @@ public class VolleyballMatch extends AbstractMatch {
 
         double total = 0;
         for (IPlayer player : lineup) {
-            total += player.getAttributes().getOrDefault("block", 50);
-            total += player.getAttributes().getOrDefault("receive", 50);
-            total += player.getAttributes().getOrDefault("stamina", 50);
+            double formMult = getFormMultiplier(player);
+            total += player.getAttributes().getOrDefault("block", 50) * formMult;
+            total += player.getAttributes().getOrDefault("receive", 50) * formMult;
+            total += player.getAttributes().getOrDefault("stamina", 50) * formMult;
         }
 
         ITactic tactic = team.getTactic();
@@ -131,6 +135,15 @@ public class VolleyballMatch extends AbstractMatch {
                 player.setInjured(games);
                 fireEvent(player.getName() + " got injured for " + games + " game(s).");
             }
+        }
+    }
+
+    private double getFormMultiplier(IPlayer player) {
+        switch (player.getForm()) {
+            case 0: return 0.85;  // Bad
+            case 2: return 1.10;  // Good
+            case 3: return 1.20;  // Excellent
+            default: return 1.00; // Normal
         }
     }
 }

@@ -41,8 +41,34 @@ public class FootballLeague extends AbstractLeague {
     @Override
     public LeagueStandings getStandings() {
         List<ITeam> ranked = new ArrayList<>(teams);
-        ranked.sort(Comparator.comparingInt(ITeam::getPoints).reversed().thenComparing(ITeam::getName));
+        ranked.sort((a, b) -> {
+            if (b.getPoints() != a.getPoints()) {
+                return b.getPoints() - a.getPoints();
+            }
+            int gdDiff = getGoalDifference(b) - getGoalDifference(a);
+            if (gdDiff != 0) {
+                return gdDiff;
+            }
+            return a.getName().compareTo(b.getName());
+        });
         return new LeagueStandings(ranked);
+    }
+
+    private int getGoalDifference(ITeam team) {
+        int goalsFor = 0;
+        int goalsAgainst = 0;
+        for (IMatch match : fixtures) {
+            MatchResult result = match.getResult();
+            if (result == null) continue;
+            if (result.getHomeTeam().equals(team)) {
+                goalsFor += result.getHomeScore();
+                goalsAgainst += result.getAwayScore();
+            } else if (result.getAwayTeam().equals(team)) {
+                goalsFor += result.getAwayScore();
+                goalsAgainst += result.getHomeScore();
+            }
+        }
+        return goalsFor - goalsAgainst;
     }
 
     @Override
