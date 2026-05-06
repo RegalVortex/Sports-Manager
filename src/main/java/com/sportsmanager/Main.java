@@ -124,17 +124,21 @@ public class Main {
                 manageLineup(playerTeam);
 
             }else if (choice == 7) {
-                SaveLoadService.saveGame("savegame.dat", sport, league, playerTeam);
+                String saveSlot = chooseSaveSlot();
+                SaveLoadService.saveGame(saveSlot, sport, league, playerTeam);
 
             } else if (choice == 8) {
-                LoadedGame loadedGame = SaveLoadService.loadGame("savegame.dat", registry);
+                String saveSlot = chooseSaveSlot();
+                LoadedGame loadedGame = SaveLoadService.loadGame(saveSlot, registry);
 
                 if (loadedGame != null) {
                     sport = loadedGame.getSport();
                     league = loadedGame.getLeague();
                     playerTeam = loadedGame.getPlayerTeam();
 
-                    System.out.println("Game loaded successfully.");
+                    System.out.println("Game loaded successfully from " + saveSlot + ".");
+                } else {
+                    System.out.println("No save found in this slot.");
                 }
 
             } else if (choice == 9) {
@@ -458,6 +462,20 @@ public class Main {
                     rank, team.getName(), w, d, l, team.getPoints());
             rank++;
         }
+    }
+
+    private static String chooseSaveSlot() {
+        String[] slots = {"save_slot1.dat", "save_slot2.dat", "save_slot3.dat"};
+
+        System.out.println("\n=== Select Save Slot ===");
+        for (int i = 0; i < slots.length; i++) {
+            java.io.File file = new java.io.File(slots[i]);
+            String status = file.exists() ? "Saved" : "Empty";
+            System.out.println((i + 1) + ". Slot " + (i + 1) + " [" + status + "]");
+        }
+
+        int choice = readChoice(1, 3);
+        return slots[choice - 1];
     }
 
     private static int readChoice(int min, int max) {
