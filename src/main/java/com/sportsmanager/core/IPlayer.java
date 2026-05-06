@@ -26,4 +26,6 @@ public interface IPlayer {
     void train(String attribute, int amount);
 
     void setForm(int form);
+
+
 }

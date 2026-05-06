@@ -24,7 +24,7 @@ public class SportRegistry {
         if (name == null || name.isBlank() || factory == null) {
             return;
         }
-        registry.put(name, factory);
+        registry.put(name.toLowerCase(), factory);
     }
 
     public SportFactory getFactory(String name) {

@@ -42,7 +42,8 @@ public class SaveLoadService {
                         player.getPosition(),
                         player.getAttributes(),
                         player.isInjured(),
-                        player.getInjuryGamesRemaining()
+                        player.getInjuryGamesRemaining(),
+                        player.getForm()          // <-- bunu ekle
                 );
                 savedPlayers.add(savedPlayer);
             }
@@ -125,6 +126,7 @@ public class SaveLoadService {
                     } else {
                         player.setInjured(0);
                     }
+                    player.setForm(savedPlayer.getForm());   // <-- bunu ekle
 
                     abstractTeam.addPlayerToSquad(player);
                 }

@@ -1,5 +1,6 @@
 package com.sportsmanager;
-
+import com.sportsmanager.sport.football.FootballSportFactory;
+import com.sportsmanager.sport.volleyball.VolleyballSportFactory;
 import com.sportsmanager.core.*;
 import com.sportsmanager.save.LoadedGame;
 import com.sportsmanager.save.SaveLoadService;
@@ -19,6 +20,8 @@ public class Main {
     public static void main(String[] args) {
 
         SportRegistry registry = new SportRegistry();
+        registry.register("football", new FootballSportFactory());
+        registry.register("volleyball", new VolleyballSportFactory());
         GameSetupService setupService = new GameSetupService(registry);
 
         String selectedSport = chooseSport(registry);

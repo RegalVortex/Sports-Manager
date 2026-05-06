@@ -11,19 +11,24 @@ public class SavedPlayer implements Serializable {
     private Map<String, Integer> attributes;
     private boolean injured;
     private int injuryGamesRemaining;
+    private int form;
 
     public SavedPlayer(String name,
                        String position,
                        Map<String, Integer> attributes,
                        boolean injured,
-                       int injuryGamesRemaining) {
+                       int injuryGamesRemaining,
+                       int form) {           // <-- bunu ekle
         this.name = name;
         this.position = position;
         this.attributes = new HashMap<>(attributes);
         this.injured = injured;
         this.injuryGamesRemaining = injuryGamesRemaining;
+        this.form = form;                    // <-- bunu ekle
     }
-
+    public int getForm() {
+        return form;
+    }
     public String getName() {
         return name;
     }
