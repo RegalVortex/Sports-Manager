@@ -33,5 +33,9 @@ public interface IPlayer {
 
     void setForm(int form);
 
+    int getMatchesPlayed();
+    int getWeeksInjured();
+    void incrementMatchesPlayed();
+
 
 }

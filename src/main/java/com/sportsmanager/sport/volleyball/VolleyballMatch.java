@@ -53,6 +53,7 @@ public class VolleyballMatch extends AbstractMatch {
         double teamAStrength = calculateAttackPower(teamA) + calculateDefensePower(teamA);
         double teamBStrength = calculateAttackPower(teamB) + calculateDefensePower(teamB);
 
+        teamAStrength *= 1.05;
         int targetScore = finalSet ? 15 : 25;
 
         int teamAPoints = targetScore;

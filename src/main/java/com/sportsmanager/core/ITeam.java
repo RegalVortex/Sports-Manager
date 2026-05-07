@@ -25,5 +25,7 @@ public interface ITeam {
     void setCoach(ICoach coach);
 
     void resetPoints();
+
+    int getTeamOverallRating();
    
 }

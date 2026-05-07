@@ -32,6 +32,11 @@ public class FootballMatch extends AbstractMatch {
         double attackPower = calculateAttackPower(attackingTeam);
         double defensePower = calculateDefensePower(defendingTeam);
 
+        // Ev sahibi avantajı: %5 attack bonusu
+        if (attackingTeam.equals(homeTeam)) {
+            attackPower *= 1.05;
+        }
+
         double raw = (attackPower / defensePower) * 2.0;
         int score = (int) Math.round(raw + random.nextDouble());
 

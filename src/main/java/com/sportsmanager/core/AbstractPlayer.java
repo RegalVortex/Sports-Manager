@@ -12,7 +12,8 @@ public abstract class AbstractPlayer implements IPlayer {
     protected int form;
     protected int age;
     protected int potential;
-
+    protected int matchesPlayed;
+    protected int weeksInjured;
 
 
     public AbstractPlayer(String name, String position) {
@@ -27,10 +28,26 @@ public abstract class AbstractPlayer implements IPlayer {
         this.injured = false;
         this.injuryGamesRemaining = 0;
         this.form = 1;
+        this.matchesPlayed = 0;
+        this.weeksInjured = 0;
         this.age = age;
         this.potential = Math.min(Math.max(potential, 50), 99);
     }
 
+    @Override
+    public int getMatchesPlayed() {
+        return matchesPlayed;
+    }
+
+    @Override
+    public int getWeeksInjured() {
+        return weeksInjured;
+    }
+
+    @Override
+    public void incrementMatchesPlayed() {
+        matchesPlayed++;
+    }
     @Override
     public void growOlder() {
         age++;

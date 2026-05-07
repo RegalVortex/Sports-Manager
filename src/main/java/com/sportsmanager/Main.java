@@ -186,8 +186,12 @@ public class Main {
         }
         return null;
     }
+
+
     private static void showSquad(ITeam team) {
         System.out.println("\n=== Squad: " + team.getName() + " ===");
+        System.out.println("Takım Gücü: " + team.getTeamOverallRating() + " OVR");
+        System.out.println("--------------------------------------------------");
 
         for (IPlayer player : team.getSquad()) {
             System.out.println(
@@ -197,6 +201,7 @@ public class Main {
                             + " | POT: " + player.getPotential()
                             + " | OVR: " + player.getOverallRating()
                             + " | Form: " + player.getFormLabel()
+                            + " | MP: " + player.getMatchesPlayed()
                             + (player.isInjured() ? " | INJURED (" + player.getInjuryGamesRemaining() + " wks)" : "")
             );
         }
@@ -204,10 +209,10 @@ public class Main {
 
     private static void showCoach(ITeam team) {
         ICoach coach = team.getCoach();
-
         System.out.println("\n=== Coach ===");
         System.out.println("Name: " + coach.getName());
         System.out.println("Specialty: " + coach.getSpecialty());
+        System.out.println("Quality: " + coach.getQuality() + "/10");
     }
 
     private static void playNextWeek(ILeague league, ITeam playerTeam) {
@@ -362,8 +367,8 @@ public class Main {
                 ITeam opponent = playerTeamIsHome ? match.getAwayTeam() : match.getHomeTeam();
 
                 System.out.println("\n--- Match Preview ---");
-                System.out.println("Your Team: " + playerTeam.getName());
-                System.out.println("Opponent: " + opponent.getName());
+                System.out.println("Your Team: " + playerTeam.getName() + " [OVR: " + playerTeam.getTeamOverallRating() + "]");
+                System.out.println("Opponent:  " + opponent.getName() + " [OVR: " + opponent.getTeamOverallRating() + "]");
                 System.out.println("Opponent Points: " + opponent.getPoints());
                 System.out.println("Your Tactic: " + playerTeam.getTactic().getName());
                 System.out.println("Your Injured Players: " + countInjuredPlayers(playerTeam));

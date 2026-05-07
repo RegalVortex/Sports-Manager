@@ -80,6 +80,27 @@ public abstract class AbstractLeague implements ILeague {
             }
         }
 
+        for (ITeam team : teams) {
+            for (IPlayer player : team.getStartingLineup()) {
+                if (!player.isInjured()) {
+                    player.incrementMatchesPlayed();
+                }
+            }
+        }
+
+        for (ITeam team : teams) {
+            for (IPlayer player : team.getSquad()) {
+                player.decrementInjury();
+            }
+        }
+
+
+        for (ITeam team : teams) {
+            if (team instanceof AbstractTeam) {
+                ((AbstractTeam) team).autoFixLineup();
+            }
+        }
+
         currentWeek++;
     }
 

@@ -131,6 +131,17 @@ public void substitutePlayer(IPlayer out, IPlayer in) {
         this.points = 0;
     }
 
+    @Override
+    public int getTeamOverallRating() {
+        List<IPlayer> lineup = startingLineup.isEmpty() ? squad : startingLineup;
+        if (lineup.isEmpty()) return 0;
+        int sum = 0;
+        for (IPlayer player : lineup) {
+            sum += player.getOverallRating();
+        }
+        return sum / lineup.size();
+    }
+
     public void clearSquad() {
         this.squad.clear();
         this.startingLineup.clear();
@@ -138,6 +149,35 @@ public void substitutePlayer(IPlayer out, IPlayer in) {
 
     public void clearStartingLineup() {
         this.startingLineup.clear();
+    }
+
+    public void autoFixLineup() {
+        List<IPlayer> currentLineup = new ArrayList<>(startingLineup);
+        boolean changed = false;
+
+        for (int i = 0; i < currentLineup.size(); i++) {
+            IPlayer player = currentLineup.get(i);
+            if (player.isInjured()) {
+                IPlayer replacement = findHealthyBenchPlayer(currentLineup);
+                if (replacement != null) {
+                    currentLineup.set(i, replacement);
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed && validateLineup(currentLineup)) {
+            this.startingLineup = currentLineup;
+        }
+    }
+
+    private IPlayer findHealthyBenchPlayer(List<IPlayer> currentLineup) {
+        for (IPlayer player : squad) {
+            if (!player.isInjured() && !currentLineup.contains(player)) {
+                return player;
+            }
+        }
+        return null;
     }
 
     public abstract boolean validateLineup(List<IPlayer> chosen);
