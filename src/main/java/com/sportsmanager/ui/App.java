@@ -3,6 +3,7 @@ package com.sportsmanager.ui;
 import com.sportsmanager.ui.scenes.MainMenuScene;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import com.sportsmanager.ui.scenes.SportSelectScene;
 
 public class App extends Application {
 
@@ -12,10 +13,11 @@ public class App extends Application {
         SceneManager manager = SceneManager.getInstance();
         manager.initialize(primaryStage);
 
-        // Sahneleri kaydet
+       
         manager.register("mainmenu", MainMenuScene::create);
 
-        // Başlangıç sahnesi
+        manager.register("sportselect", SportSelectScene::create);
+     
         manager.navigateTo("mainmenu");
     }
 
