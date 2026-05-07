@@ -1,0 +1,51 @@
+package com.sportsmanager.ui;
+
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
+public class SceneManager {
+
+    private static SceneManager instance;
+    private Stage primaryStage;
+    private final Map<String, Supplier<Scene>> sceneRegistry = new HashMap<>();
+
+    private SceneManager() {}
+
+    public static SceneManager getInstance() {
+        if (instance == null) {
+            instance = new SceneManager();
+        }
+        return instance;
+    }
+
+    public void initialize(Stage stage) {
+        this.primaryStage = stage;
+        this.primaryStage.setTitle("Sports Manager");
+        this.primaryStage.setWidth(480);
+        this.primaryStage.setHeight(850);
+        this.primaryStage.setResizable(false);
+    }
+
+    public void register(String name, Supplier<Scene> sceneSupplier) {
+        sceneRegistry.put(name, sceneSupplier);
+    }
+
+    public void navigateTo(String name) {
+        Supplier<Scene> supplier = sceneRegistry.get(name);
+        if (supplier == null) {
+            System.out.println("Scene not found: " + name);
+            return;
+        }
+        Scene scene = supplier.get();
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public Stage getStage() {
+        return primaryStage;
+    }
+}
