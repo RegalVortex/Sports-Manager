@@ -12,6 +12,10 @@ public class SceneManager {
     private static SceneManager instance;
     private Stage primaryStage;
     private final Map<String, Supplier<Scene>> sceneRegistry = new HashMap<>();
+    private String selectedSport;
+    private String selectedLeague;
+    private String selectedTeam;
+
 
     private SceneManager() {}
 
@@ -48,4 +52,12 @@ public class SceneManager {
     public Stage getStage() {
         return primaryStage;
     }
+    public void setSelectedSport(String sport) { this.selectedSport = sport; }
+    public String getSelectedSport() { return selectedSport; }
+    
+    public void setSelectedLeague(String league) { this.selectedLeague = league; }
+    public String getSelectedLeague() { return selectedLeague; }
+    
+    public void setSelectedTeam(String team) { this.selectedTeam = team; }
+    public String getSelectedTeam() { return selectedTeam; }
 }
