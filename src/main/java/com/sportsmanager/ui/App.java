@@ -1,5 +1,6 @@
 package com.sportsmanager.ui;
 
+import com.sportsmanager.ui.scenes.LeagueSelectScene;
 import com.sportsmanager.ui.scenes.MainMenuScene;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -17,7 +18,8 @@ public class App extends Application {
         manager.register("mainmenu", MainMenuScene::create);
 
         manager.register("sportselect", SportSelectScene::create);
-     
+
+        manager.register("leagueselect", LeagueSelectScene::create);
         manager.navigateTo("mainmenu");
     }
 
