@@ -4,8 +4,6 @@ import com.sportsmanager.core.*;
 import com.sportsmanager.setup.GameSetupService;
 import com.sportsmanager.setup.LeaguePreset;
 import com.sportsmanager.setup.PresetData;
-import com.sportsmanager.ui.scenes.DashboardScene;
-
 import com.sportsmanager.ui.scenes.*;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -20,28 +18,37 @@ public class App extends Application {
         manager.initialize(primaryStage);
 
         SportRegistry registry = new SportRegistry();
-
         manager.setRegistry(registry);
 
         // Sahneleri kaydet
-        manager.register("mainmenu", MainMenuScene::create);
+        manager.register("mainmenu",    MainMenuScene::create);
         manager.register("sportselect", SportSelectScene::create);
         manager.register("leagueselect", LeagueSelectScene::create);
-        manager.register("teamselect", TeamSelectScene::create);
-        manager.register("dashboard", () -> {
+        manager.register("teamselect",  TeamSelectScene::create);
+
+        // "newgame" — sadece takım seçilince bir kez çalışır, oyunu kurar
+        manager.register("newgame", () -> {
             setupGame(manager, registry);
-        return     DashboardScene.create();
+            return DashboardScene.create();
         });
+
+        // "dashboard" — haftayı ilerletince tekrar render eder, setupGame ÇALIŞMAZ
+        manager.register("dashboard", DashboardScene::create);
+
+        // Alt ekranlar
+        manager.register("squad",     SquadScene::create);
+        manager.register("league",    LeagueScene::create);
+        manager.register("match",     MatchScene::create);
+        manager.register("seasonend", SeasonEndScene::create);
 
         manager.navigateTo("mainmenu");
     }
 
     private void setupGame(SceneManager manager, SportRegistry registry) {
-        String sport = manager.getSelectedSport();
+        String sport      = manager.getSelectedSport();
         String leagueName = manager.getSelectedLeague();
-        String teamName = manager.getSelectedTeam();
+        String teamName   = manager.getSelectedTeam();
 
-        SportFactory factory = registry.getFactory(sport);
         GameSetupService setupService = new GameSetupService(registry);
 
         List<LeaguePreset> leagues = PresetData.getLeaguesForSport(sport);
@@ -58,9 +65,9 @@ public class App extends Application {
         GameSetupService.SetupResult result =
                 setupService.createGame(sport, selectedPreset, teamName);
 
-        ISport currentSport = result.getSport();
+        ISport  currentSport  = result.getSport();
         ILeague currentLeague = result.getLeague();
-        ITeam playerTeam = result.getPlayerTeam();
+        ITeam   playerTeam    = result.getPlayerTeam();
 
         manager.setCurrentSport(currentSport);
         manager.setCurrentLeague(currentLeague);

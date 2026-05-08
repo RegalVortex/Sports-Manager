@@ -143,7 +143,7 @@ public class TeamSelectScene {
 
         card.setOnMouseClicked(e -> {
             SceneManager.getInstance().setSelectedTeam(teamName);
-            SceneManager.getInstance().navigateTo("dashboard");
+            SceneManager.getInstance().navigateTo("newgame");
         });
 
         return card;
