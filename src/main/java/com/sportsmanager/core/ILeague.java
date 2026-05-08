@@ -4,11 +4,13 @@ import java.util.List;
 
 
 public interface ILeague {
-String getName();
+    String getName();
 
     List<ITeam> getTeams();
 
     int getCurrentWeek();
+
+    int getCurrentSeason();
 
     List<IMatch> getAllFixtures();
 

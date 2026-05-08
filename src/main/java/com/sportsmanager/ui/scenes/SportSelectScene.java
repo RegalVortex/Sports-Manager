@@ -31,7 +31,7 @@ public class SportSelectScene {
         content.getChildren().addAll(footballBtn, volleyballBtn);
         root.getChildren().addAll(header, content);
 
-        return new Scene(root, 480, 850);
+        return new Scene(root);
     }
 
     private static VBox createHeader(String title, String subtitle) {

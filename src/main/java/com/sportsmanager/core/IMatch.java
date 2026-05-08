@@ -13,6 +13,8 @@ public interface IMatch {
 
     MatchResult getResult();
 
+   int getWeek();
+
     boolean isPlayed();
 
     List<String> getCommentary();

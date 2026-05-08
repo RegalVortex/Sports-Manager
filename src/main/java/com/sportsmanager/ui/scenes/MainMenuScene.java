@@ -60,7 +60,7 @@ public class MainMenuScene {
 
         root.getChildren().addAll(logoBox, menuBox, footer);
 
-        return new Scene(root, 480, 850);
+        return new Scene(root);
     }
 
     private static HBox createMenuButton(String title, String subtitle, boolean highlighted) {

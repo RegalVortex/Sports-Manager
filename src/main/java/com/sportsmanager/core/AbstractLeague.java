@@ -11,12 +11,14 @@ public abstract class AbstractLeague implements ILeague {
     protected List<IMatch> fixtures;
     protected int currentWeek;
     protected int totalWeeks;
+    protected int currentSeason;   // ← YENİ
 
     public AbstractLeague(String name, List<ITeam> teams) {
         this.name = name;
         this.teams = new ArrayList<>(teams);
         this.fixtures = new ArrayList<>();
         this.currentWeek = 1;
+        this.currentSeason = 1;    // ← YENİ
         generateFixtures();
         this.totalWeeks = calculateTotalWeeks();
     }
@@ -34,6 +36,11 @@ public abstract class AbstractLeague implements ILeague {
     @Override
     public int getCurrentWeek() {
         return currentWeek;
+    }
+
+    @Override
+    public int getCurrentSeason() {   // ← YENİ
+        return currentSeason;
     }
 
     @Override
@@ -94,7 +101,6 @@ public abstract class AbstractLeague implements ILeague {
             }
         }
 
-
         for (ITeam team : teams) {
             if (team instanceof AbstractTeam) {
                 ((AbstractTeam) team).autoFixLineup();
@@ -124,7 +130,6 @@ public abstract class AbstractLeague implements ILeague {
 
         int week = 1;
 
-
         for (int round = 0; round < rounds; round++) {
             for (int matchIndex = 0; matchIndex < matchesPerWeek; matchIndex++) {
                 ITeam home = rotationTeams.get(matchIndex);
@@ -138,7 +143,6 @@ public abstract class AbstractLeague implements ILeague {
             rotateTeams(rotationTeams);
             week++;
         }
-
 
         int firstHalfFixtureCount = fixtures.size();
 
@@ -174,7 +178,6 @@ public abstract class AbstractLeague implements ILeague {
         return 0;
     }
 
-
     protected int calculateTotalWeeks() {
         int maxWeek = 0;
         for (IMatch match : fixtures) {
@@ -196,9 +199,10 @@ public abstract class AbstractLeague implements ILeague {
             for (IPlayer player : team.getSquad()) {
                 player.setInjured(0);
                 player.setForm(1);
-                player.growOlder();  // Yeni sezon = 1 yaş büyü
+                player.growOlder();
             }
         }
+        currentSeason++;           // ← YENİ: sezon numarasını artır
         currentWeek = 1;
         generateFixtures();
         totalWeeks = calculateTotalWeeks();
@@ -240,6 +244,4 @@ public abstract class AbstractLeague implements ILeague {
         }
         return losses;
     }
-
-
 }

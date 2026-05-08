@@ -28,6 +28,7 @@ public class SquadScene {
     private static final String SUBTEXT = "#8A8A9A";
     private static final String GREEN   = "#4CAF50";
     private static final String RED     = "#F44336";
+    private static final int    MAX_W   = 600;
 
     private static String activeTab = "SQUAD";
 
@@ -35,9 +36,13 @@ public class SquadScene {
         SceneManager sm = SceneManager.getInstance();
         ITeam team = sm.getCurrentPlayerTeam();
 
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: " + BG + ";");
-        root.setTop(createTopBar(team));
+        StackPane outer = new StackPane();
+        outer.setStyle("-fx-background-color: " + BG + ";");
+
+        BorderPane content = new BorderPane();
+        content.setStyle("-fx-background-color: " + BG + ";");
+        content.setMaxWidth(MAX_W);
+        content.setTop(createTopBar(team));
 
         VBox body = new VBox(0);
         body.getChildren().add(createSubTabBar());
@@ -56,9 +61,12 @@ public class SquadScene {
 
         body.getChildren().add(scroll);
         VBox.setVgrow(scroll, Priority.ALWAYS);
-        root.setCenter(body);
+        content.setCenter(body);
 
-        return new Scene(root, 480, 850);
+        StackPane.setAlignment(content, Pos.TOP_CENTER);
+        outer.getChildren().add(content);
+
+        return new Scene(outer);
     }
 
     private static HBox createTopBar(ITeam team) {
@@ -101,13 +109,13 @@ public class SquadScene {
     private static HBox createSubTabBar() {
         HBox bar = new HBox(0);
         bar.setStyle("-fx-background-color: " + CARD + ";");
-        bar.setPrefWidth(480);
+        bar.setMaxWidth(Double.MAX_VALUE);
 
         String[] tabs = {"SQUAD", "TACTICS"};
         for (String tab : tabs) {
             VBox cell = new VBox(0);
             cell.setAlignment(Pos.CENTER);
-            cell.setPrefWidth(240);
+            HBox.setHgrow(cell, Priority.ALWAYS);
             cell.setPadding(new Insets(12, 0, 0, 0));
             cell.setStyle("-fx-cursor: hand;");
 
@@ -118,7 +126,7 @@ public class SquadScene {
 
             Region underline = new Region();
             underline.setPrefHeight(2);
-            underline.setPrefWidth(240);
+            underline.setMaxWidth(Double.MAX_VALUE);
             underline.setStyle("-fx-background-color: " + (active ? GOLD : "transparent") + ";");
             VBox.setMargin(underline, new Insets(10, 0, 0, 0));
 

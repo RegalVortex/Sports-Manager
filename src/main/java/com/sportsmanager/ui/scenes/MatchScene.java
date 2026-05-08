@@ -28,6 +28,7 @@ public class MatchScene {
     private static final String GREEN   = "#4CAF50";
     private static final String RED     = "#F44336";
     private static final String ORANGE  = "#FF9800";
+    private static final int    MAX_W   = 600;
 
     private static IMatch  currentMatch;
     private static ILeague currentLeague;
@@ -38,6 +39,9 @@ public class MatchScene {
     private static boolean      matchFinished = false;
     private static int          homeTotalScore = 0;
     private static int          awayTotalScore = 0;
+    // Pre-simulated official result (set in prepareMatch)
+    private static int          homeSimTotal  = 0;
+    private static int          awaySimTotal  = 0;
 
     public static void prepareMatch(IMatch match, ILeague league) {
         currentMatch   = match;
@@ -50,6 +54,15 @@ public class MatchScene {
         awayTotalScore = 0;
         String sport = SceneManager.getInstance().getSelectedSport();
         totalPeriods = (sport != null && sport.equalsIgnoreCase("volleyball")) ? 3 : 2;
+
+        // Simulate officially NOW so the stored result is locked in.
+        // We read back the official scores and use them to drive the display.
+        if (match.getResult() == null) {
+            match.simulate();
+        }
+        MatchResult r = match.getResult();
+        homeSimTotal = (r != null) ? r.getHomeScore() : 0;
+        awaySimTotal = (r != null) ? r.getAwayScore() : 0;
     }
 
     public static Scene create() {
@@ -58,18 +71,29 @@ public class MatchScene {
             return null;
         }
 
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: " + BG + ";");
+        StackPane outer = new StackPane();
+        outer.setStyle("-fx-background-color: " + BG + ";");
 
-        StackPane stack = new StackPane();
-        stack.getChildren().add(buildMainContent());
+        BorderPane content = new BorderPane();
+        content.setStyle("-fx-background-color: " + BG + ";");
+        content.setMaxWidth(MAX_W);
+        content.setCenter(buildMainContent());
+
+        StackPane.setAlignment(content, Pos.TOP_CENTER);
+        outer.getChildren().add(content);
 
         if (currentPeriod == 0 && !matchFinished) {
-            buildBreakOverlay(stack, "MAÇA HAZIRLIK", "Kadronuzu hazırlayın");
+            buildBreakOverlay(outer, "MAÇA HAZIRLIK", "Kadronuzu hazırlayın");
         }
 
-        root.setCenter(stack);
-        return new Scene(root, 480, 850);
+        return new Scene(outer);
+    }
+
+    // ── Refresh helper ─────────────────────────────────────────────────────────
+    private static void refreshMain(StackPane parent) {
+        if (!parent.getChildren().isEmpty() && parent.getChildren().get(0) instanceof BorderPane) {
+            ((BorderPane) parent.getChildren().get(0)).setCenter(buildMainContent());
+        }
     }
 
     // ── Main Content ──────────────────────────────────────────────────────────
@@ -281,13 +305,13 @@ public class MatchScene {
     private static void buildBreakOverlay(StackPane parent, String breakTitle, String subtitle) {
         StackPane dimmer = new StackPane();
         dimmer.setStyle("-fx-background-color: rgba(0,0,0,0.65);");
-        dimmer.setPrefWidth(480);
-        dimmer.setPrefHeight(850);
+        dimmer.setMaxWidth(Double.MAX_VALUE);
+        dimmer.setMaxHeight(Double.MAX_VALUE);
         parent.getChildren().add(dimmer);
 
         VBox panel = new VBox(0);
         panel.setStyle("-fx-background-color: " + CARD + "; -fx-background-radius: 18 18 0 0;");
-        panel.setMaxWidth(480);
+        panel.setMaxWidth(MAX_W);
         StackPane.setAlignment(panel, Pos.BOTTOM_CENTER);
         parent.getChildren().add(panel);
 
@@ -390,7 +414,7 @@ public class MatchScene {
         rect.setArcWidth(4); rect.setArcHeight(4);
         rect.setFill(Color.web(posColor(p.getPosition())));
         Label posLbl = new Label(p.getPosition().length() > 3
-            ? p.getPosition().substring(0, 3).toUpperCase() : p.getPosition().toUpperCase());
+                ? p.getPosition().substring(0, 3).toUpperCase() : p.getPosition().toUpperCase());
         posLbl.setFont(Font.font("Arial", FontWeight.BOLD, 9));
         posLbl.setTextFill(Color.WHITE);
         badge.getChildren().addAll(rect, posLbl);
@@ -485,19 +509,19 @@ public class MatchScene {
         String pfx   = "P" + currentPeriod + ": ";
 
         matchLog.add(pfx + type + " " + (currentPeriod + 1) + " bitti: "
-            + home.getName() + " " + ps[0] + " – " + ps[1] + " " + away.getName());
+                + home.getName() + " " + ps[0] + " – " + ps[1] + " " + away.getName());
         addEvents(pfx, home, away, ps);
 
         currentPeriod++;
 
-        parent.getChildren().clear();
-        parent.getChildren().add(buildMainContent());
+        refreshMain(parent);
 
         if (currentPeriod >= totalPeriods || isDecided()) {
-            currentMatch.simulate();
+            // Ensure display totals exactly match the official simulated result
+            homeTotalScore = homeSimTotal;
+            awayTotalScore = awaySimTotal;
             matchFinished = true;
-            parent.getChildren().clear();
-            parent.getChildren().add(buildMainContent());
+            refreshMain(parent);
         } else {
             String bt = type + " " + currentPeriod + " BİTTİ";
             String bs = (currentPeriod + 1) + ". " + type + " başlamadan önce değişiklik yapabilirsiniz";
@@ -514,41 +538,64 @@ public class MatchScene {
             homeTotalScore += ps[0];
             awayTotalScore += ps[1];
             String pfx = "P" + currentPeriod + ": ";
-            matchLog.add(pfx + "Devre " + (currentPeriod + 1) + ": "
-                + home.getName() + " " + ps[0] + " – " + ps[1] + " " + away.getName());
+            String sport = SceneManager.getInstance().getSelectedSport();
+            String type  = (sport != null && sport.equalsIgnoreCase("volleyball")) ? "Set" : "Devre";
+            matchLog.add(pfx + type + " " + (currentPeriod + 1) + ": "
+                    + home.getName() + " " + ps[0] + " – " + ps[1] + " " + away.getName());
             addEvents(pfx, home, away, ps);
             currentPeriod++;
         }
-        currentMatch.simulate();
+        // Ensure display totals exactly match the official simulated result
+        homeTotalScore = homeSimTotal;
+        awayTotalScore = awaySimTotal;
         matchFinished = true;
-        parent.getChildren().clear();
-        parent.getChildren().add(buildMainContent());
+        refreshMain(parent);
     }
 
+    /**
+     * Distribute period scores so that they sum to the pre-simulated totals
+     * (homeSimTotal / awaySimTotal).  This ensures the score shown in MatchScene
+     * always matches what ends up in the fixture list.
+     */
     private static int[] simulatePeriod(ITeam home, ITeam away) {
         String sport = SceneManager.getInstance().getSelectedSport();
         boolean isVb = sport != null && sport.equalsIgnoreCase("volleyball");
-        int homeOvr  = home.getTeamOverallRating() + 5;
-        int awayOvr  = away.getTeamOverallRating();
-        double homeStr = homeOvr / (double)(homeOvr + awayOvr);
         Random rnd = new Random();
 
+        int hRemaining = homeSimTotal - homeTotalScore;
+        int aRemaining = awaySimTotal - awayTotalScore;
+        int periodsLeft = totalPeriods - currentPeriod; // includes this period
+
         if (isVb) {
-            return rnd.nextDouble() < homeStr ? new int[]{1, 0} : new int[]{0, 1};
+            // Each set: home wins (1-0) or away wins (0-1)
+            if (periodsLeft <= 1) {
+                // Final period — give the win to whoever still needs it
+                return hRemaining > 0 ? new int[]{1, 0} : new int[]{0, 1};
+            }
+            if (hRemaining == 0) return new int[]{0, 1};
+            if (aRemaining == 0) return new int[]{1, 0};
+            // Weighted random based on remaining set needs
+            double hChance = (double) hRemaining / (hRemaining + aRemaining);
+            return rnd.nextDouble() < hChance ? new int[]{1, 0} : new int[]{0, 1};
         } else {
-            double atk = 0.2 + rnd.nextDouble() * 0.5;
-            int hg = (int)(atk * homeStr * 3);
-            int ag = (int)(atk * (1 - homeStr) * 3);
-            if (rnd.nextDouble() < homeStr * 0.35) hg++;
-            if (rnd.nextDouble() < (1 - homeStr) * 0.35) ag++;
-            return new int[]{hg, ag};
+            // Football: distribute total goals across halves
+            if (periodsLeft <= 1) {
+                // Last half — all remaining goals go here
+                return new int[]{Math.max(0, hRemaining), Math.max(0, aRemaining)};
+            }
+            // First half: random split (0 to all of the remaining goals)
+            int hFirst = hRemaining > 0 ? rnd.nextInt(hRemaining + 1) : 0;
+            int aFirst = aRemaining > 0 ? rnd.nextInt(aRemaining + 1) : 0;
+            return new int[]{hFirst, aFirst};
         }
     }
 
     private static boolean isDecided() {
         String sport = SceneManager.getInstance().getSelectedSport();
         if (sport == null || !sport.equalsIgnoreCase("volleyball")) return false;
-        return homeTotalScore >= 3 || awayTotalScore >= 3;
+        // Best-of-N: decided when someone reaches (totalPeriods+1)/2 set wins
+        int needed = (totalPeriods + 1) / 2;
+        return homeTotalScore >= needed || awayTotalScore >= needed;
     }
 
     private static void addEvents(String pfx, ITeam home, ITeam away, int[] ps) {
@@ -577,6 +624,8 @@ public class MatchScene {
         matchFinished  = false;
         homeTotalScore = 0;
         awayTotalScore = 0;
+        homeSimTotal   = 0;
+        awaySimTotal   = 0;
     }
 
     private static String posColor(String pos) {

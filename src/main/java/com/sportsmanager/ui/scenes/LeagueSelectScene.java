@@ -41,7 +41,7 @@ public class LeagueSelectScene {
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
         root.getChildren().addAll(header, scrollPane);
-        return new Scene(root, 480, 850);
+        return new Scene(root);
     }
 
     private static VBox createHeader() {

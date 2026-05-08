@@ -19,8 +19,6 @@ public class SceneManager {
     private String selectedTeam;
     private SportRegistry registry;
 
-
-
     private SceneManager() {}
 
     public static SceneManager getInstance() {
@@ -38,7 +36,9 @@ public class SceneManager {
         this.primaryStage.setTitle("Sports Manager");
         this.primaryStage.setWidth(480);
         this.primaryStage.setHeight(850);
-        this.primaryStage.setResizable(false);
+        this.primaryStage.setMinWidth(360);
+        this.primaryStage.setMinHeight(600);
+        this.primaryStage.setResizable(true);
     }
 
     public void register(String name, Supplier<Scene> sceneSupplier) {
@@ -52,16 +52,17 @@ public class SceneManager {
             return;
         }
         Scene scene = supplier.get();
+        // Sahneyi stage'e bağla — boyut otomatik uyar
+        scene.getRoot().prefWidth(primaryStage.getWidth());
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    public Stage getStage() {
-        return primaryStage;
-    }
+    public Stage getStage() { return primaryStage; }
+
     public void setSelectedSport(String sport) { this.selectedSport = sport; }
     public String getSelectedSport() { return selectedSport; }
-    
+
     public void setSelectedLeague(String league) { this.selectedLeague = league; }
     public String getSelectedLeague() { return selectedLeague; }
 

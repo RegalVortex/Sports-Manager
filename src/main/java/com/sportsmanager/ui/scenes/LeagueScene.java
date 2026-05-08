@@ -28,6 +28,7 @@ public class LeagueScene {
     private static final String RED     = "#F44336";
     private static final String DRAW    = "#FF9800";
 
+    private static final int    MAX_W        = 600;
     private static String activeTab     = "STANDINGS";
     private static String fixtureFilter = "ALL";
 
@@ -35,9 +36,13 @@ public class LeagueScene {
         SceneManager sm  = SceneManager.getInstance();
         ILeague league   = sm.getCurrentLeague();
 
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: " + BG + ";");
-        root.setTop(createTopBar(league));
+        StackPane outer = new StackPane();
+        outer.setStyle("-fx-background-color: " + BG + ";");
+
+        BorderPane content = new BorderPane();
+        content.setStyle("-fx-background-color: " + BG + ";");
+        content.setMaxWidth(MAX_W);
+        content.setTop(createTopBar(league));
 
         VBox body = new VBox(0);
         body.getChildren().add(createSubTabBar());
@@ -56,9 +61,12 @@ public class LeagueScene {
 
         body.getChildren().add(scroll);
         VBox.setVgrow(scroll, Priority.ALWAYS);
-        root.setCenter(body);
+        content.setCenter(body);
 
-        return new Scene(root, 480, 850);
+        StackPane.setAlignment(content, Pos.TOP_CENTER);
+        outer.getChildren().add(content);
+
+        return new Scene(outer);
     }
 
     private static HBox createTopBar(ILeague league) {
@@ -96,7 +104,7 @@ public class LeagueScene {
     private static HBox createSubTabBar() {
         HBox bar = new HBox(0);
         bar.setStyle("-fx-background-color: " + CARD + ";");
-        bar.setPrefWidth(480);
+        bar.setMaxWidth(Double.MAX_VALUE);
 
         String[] tabs = {"STANDINGS", "FİKSTÜR"};
         String[] keys  = {"STANDINGS", "FIXTURES"};
@@ -106,7 +114,7 @@ public class LeagueScene {
             String key   = keys[i];
             VBox cell = new VBox(0);
             cell.setAlignment(Pos.CENTER);
-            cell.setPrefWidth(240);
+            HBox.setHgrow(cell, Priority.ALWAYS);
             cell.setPadding(new Insets(12, 0, 0, 0));
             cell.setStyle("-fx-cursor: hand;");
 
@@ -117,7 +125,7 @@ public class LeagueScene {
 
             Region underline = new Region();
             underline.setPrefHeight(2);
-            underline.setPrefWidth(240);
+            underline.setMaxWidth(Double.MAX_VALUE);
             underline.setStyle("-fx-background-color: " + (active ? GOLD : "transparent") + ";");
             VBox.setMargin(underline, new Insets(10, 0, 0, 0));
 
@@ -239,7 +247,7 @@ public class LeagueScene {
 
         vbox.getChildren().add(createFilterRow());
 
-        List<IMatch> fixtures = league.getFixtures();
+        List<IMatch> fixtures = league.getAllFixtures();
         int currentWeek = league.getCurrentWeek();
         ITeam playerTeam = SceneManager.getInstance().getCurrentPlayerTeam();
 
@@ -266,7 +274,7 @@ public class LeagueScene {
                     vbox.getChildren().add(weekHeader(shownWeek, currentWeek));
                 }
                 boolean inv = playerTeam != null
-                    && (m.getHomeTeam().equals(playerTeam) || m.getAwayTeam().equals(playerTeam));
+                        && (m.getHomeTeam().equals(playerTeam) || m.getAwayTeam().equals(playerTeam));
                 vbox.getChildren().add(matchRow(m, inv, playerTeam));
             }
         }
@@ -293,8 +301,8 @@ public class LeagueScene {
             btn.setFont(Font.font("Arial", FontWeight.BOLD, 11));
             btn.setPadding(new Insets(5, 12, 5, 12));
             btn.setStyle(active
-                ? "-fx-background-color: " + GOLD + "; -fx-background-radius: 12;"
-                : "-fx-background-color: " + CARD2 + "; -fx-background-radius: 12;");
+                    ? "-fx-background-color: " + GOLD + "; -fx-background-radius: 12;"
+                    : "-fx-background-color: " + CARD2 + "; -fx-background-radius: 12;");
             btn.setTextFill(Color.web(active ? BG : SUBTEXT));
             btn.setStyle(btn.getStyle());
             btn.setStyle("-fx-background-color: " + (active ? GOLD : CARD2) + "; -fx-background-radius: 12; -fx-cursor: hand;");
@@ -406,8 +414,8 @@ public class LeagueScene {
         if (name == null || name.isEmpty()) return "?";
         String[] p = name.trim().split("\\s+");
         return p.length == 1
-            ? p[0].substring(0, Math.min(2, p[0].length())).toUpperCase()
-            : ("" + p[0].charAt(0) + p[p.length - 1].charAt(0)).toUpperCase();
+                ? p[0].substring(0, Math.min(2, p[0].length())).toUpperCase()
+                : ("" + p[0].charAt(0) + p[p.length - 1].charAt(0)).toUpperCase();
     }
     private static String outcome(MatchResult r, ITeam t) {
         if (r == null || t == null) return "";
