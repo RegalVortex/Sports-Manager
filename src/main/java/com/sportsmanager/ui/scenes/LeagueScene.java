@@ -66,7 +66,7 @@ public class LeagueScene {
         StackPane.setAlignment(content, Pos.TOP_CENTER);
         outer.getChildren().add(content);
 
-        return new Scene(outer);
+        return new Scene(outer, 480, 850);
     }
 
     private static HBox createTopBar(ILeague league) {

@@ -86,7 +86,7 @@ public class MatchScene {
             buildBreakOverlay(outer, "MAÇA HAZIRLIK", "Kadronuzu hazırlayın");
         }
 
-        return new Scene(outer);
+        return new Scene(outer, 480, 850);
     }
 
     // ── Refresh helper ─────────────────────────────────────────────────────────
@@ -293,8 +293,15 @@ public class MatchScene {
         cont.setPadding(new Insets(12, 30, 12, 30));
         cont.setStyle("-fx-background-color: " + GOLD + "; -fx-background-radius: 8; -fx-cursor: hand;");
         cont.setOnMouseClicked(e -> {
+            ILeague league = currentLeague;
+            // Advance the week: this applies match result & simulates other teams' matches.
+            // The player's match already has played=true so simulate() is a no-op for it.
+            if (league != null && !league.isSeasonOver()) {
+                league.advanceWeek();
+            }
             resetState();
-            SceneManager.getInstance().navigateTo("dashboard");
+            String dest = (league != null && league.isSeasonOver()) ? "seasonend" : "dashboard";
+            SceneManager.getInstance().navigateTo(dest);
         });
 
         card.getChildren().addAll(ft, score, winnerLbl, cont);
@@ -389,9 +396,7 @@ public class MatchScene {
             HBox row = subRow(p, false);
             row.setOnMouseClicked(e -> {
                 if (selectedLineup[0] == null || p.isInjured()) return;
-                List<IPlayer> lu = playerTeam.getStartingLineup();
-                int idx = lu.indexOf(selectedLineup[0]);
-                if (idx >= 0) lu.set(idx, p);
+                playerTeam.substitutePlayer(selectedLineup[0], p);
                 selectedLineup[0] = null;
                 SceneManager.getInstance().navigateTo("match");
             });

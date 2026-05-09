@@ -12,26 +12,35 @@ import javafx.scene.text.FontWeight;
 
 public class SportSelectScene {
 
+    private static final int MAX_W = 600;
+
     public static Scene create() {
-        VBox root = new VBox();
-        root.setStyle("-fx-background-color: #0D0D0D;");
-
         // Header
-        VBox header = createHeader("SPORT SELECTION", "Choose your sport");
-        
+        VBox header = createHeader("SPOR SEÇİMİ", "Yönetmek istediğin sporu seç");
+
         // İçerik
-        VBox content = new VBox(20);
-        content.setAlignment(Pos.CENTER);
-        content.setPadding(new Insets(40, 30, 30, 30));
-        VBox.setVgrow(content, Priority.ALWAYS);
+        VBox body = new VBox(20);
+        body.setAlignment(Pos.CENTER);
+        body.setPadding(new Insets(40, 30, 30, 30));
 
-        HBox footballBtn = createSportCard("⚽", "Football", "Classic 11-a-side football", "football");
-        HBox volleyballBtn = createSportCard("🏐", "Volleyball", "6-a-side volleyball", "volleyball");
+        HBox footballBtn = createSportCard("⚽", "Futbol", "11'e karşı 11 klasik futbol", "football");
+        HBox volleyballBtn = createSportCard("🏐", "Voleybol", "6'ya karşı 6 voleybol", "volleyball");
 
-        content.getChildren().addAll(footballBtn, volleyballBtn);
-        root.getChildren().addAll(header, content);
+        body.getChildren().addAll(footballBtn, volleyballBtn);
 
-        return new Scene(root);
+        VBox root = new VBox(0, header, body);
+        root.setStyle("-fx-background-color: #0D0D0D;");
+        VBox.setVgrow(body, Priority.ALWAYS);
+
+        BorderPane content = new BorderPane(root);
+        content.setStyle("-fx-background-color: #0D0D0D;");
+        content.setMaxWidth(MAX_W);
+
+        StackPane outer = new StackPane(content);
+        outer.setStyle("-fx-background-color: #0D0D0D;");
+        StackPane.setAlignment(content, Pos.TOP_CENTER);
+
+        return new Scene(outer, 480, 850);
     }
 
     private static VBox createHeader(String title, String subtitle) {

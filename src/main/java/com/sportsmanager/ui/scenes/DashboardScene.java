@@ -26,31 +26,40 @@ public class DashboardScene {
     private static final String GREEN   = "#4CAF50";
     private static final String RED     = "#F44336";
 
+    private static final int MAX_W = 600;
+
     public static Scene create() {
         SceneManager sm     = SceneManager.getInstance();
         ILeague      league = sm.getCurrentLeague();
         ITeam        team   = sm.getCurrentPlayerTeam();
 
-        BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: " + BG + ";");
+        StackPane outer = new StackPane();
+        outer.setStyle("-fx-background-color: " + BG + ";");
+
+        BorderPane content = new BorderPane();
+        content.setStyle("-fx-background-color: " + BG + ";");
+        content.setMaxWidth(MAX_W);
 
         VBox top = new VBox(0);
         top.getChildren().add(createTopBar(league, team));
         top.getChildren().add(createTeamHeader(team, league));
         top.getChildren().add(createTabBar());
-        root.setTop(top);
+        content.setTop(top);
 
-        root.setCenter(createScrollContent(league, team));
+        content.setCenter(createScrollContent(league, team));
 
-        // Sabit boyut yok — stage'e bağlı
-        return new Scene(root);
+        StackPane.setAlignment(content, Pos.TOP_CENTER);
+        outer.getChildren().add(content);
+
+        return new Scene(outer, 480, 850);
     }
 
-    private static HBox createTopBar(ILeague league, ITeam team) {
+    private static VBox createTopBar(ILeague league, ITeam team) {
         HBox bar = new HBox();
         bar.setAlignment(Pos.CENTER_LEFT);
         bar.setStyle("-fx-background-color: " + CARD + ";");
         bar.setPadding(new Insets(12, 16, 12, 16));
+        bar.setMaxWidth(Double.MAX_VALUE);
 
         int week = league != null ? league.getCurrentWeek() : 1;
         Label weekLbl = new Label("Hafta " + week);
@@ -60,14 +69,26 @@ public class DashboardScene {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        IMatch nextMatch = findNextMatch(league, team);
-        Label advBtn = new Label(nextMatch != null ? "⚽  MAÇI OYNA" : "▶  İLERLE");
+        boolean hasMatch = findNextMatch(league, team) != null;
+        boolean seasonOver = league != null && league.isSeasonOver();
+        Label advBtn;
+        if (seasonOver) {
+            advBtn = new Label("🏆  SEZON SONU");
+        } else if (hasMatch) {
+            advBtn = new Label("⚽  MAÇI OYNA");
+        } else {
+            advBtn = new Label("▶  İLERLE");
+        }
         advBtn.setFont(Font.font("Arial", FontWeight.BOLD, 13));
         advBtn.setTextFill(Color.web(BG));
         advBtn.setPadding(new Insets(8, 18, 8, 18));
         advBtn.setStyle("-fx-background-color: " + GOLD + "; -fx-background-radius: 8; -fx-cursor: hand;");
         advBtn.setOnMouseClicked(e -> {
             if (league == null) return;
+            if (league.isSeasonOver()) {
+                SceneManager.getInstance().navigateTo("seasonend");
+                return;
+            }
             IMatch match = findNextMatch(league, team);
             if (match != null) {
                 MatchScene.prepareMatch(match, league);
@@ -82,12 +103,11 @@ public class DashboardScene {
         bar.getChildren().addAll(weekLbl, spacer, advBtn);
 
         VBox wrap = new VBox(0, bar);
+        wrap.setMaxWidth(Double.MAX_VALUE);
         Region sep = new Region(); sep.setPrefHeight(1);
         sep.setStyle("-fx-background-color: #2A3050;");
         wrap.getChildren().add(sep);
-        HBox outer = new HBox(wrap);
-        HBox.setHgrow(wrap, Priority.ALWAYS);
-        return outer;
+        return wrap;
     }
 
     private static VBox createTeamHeader(ITeam team, ILeague league) {
@@ -117,9 +137,10 @@ public class DashboardScene {
         return wrap;
     }
 
-    private static HBox createTabBar() {
+    private static VBox createTabBar() {
         HBox bar = new HBox(0);
         bar.setStyle("-fx-background-color: " + CARD + ";");
+        bar.setMaxWidth(Double.MAX_VALUE);
 
         String[][] tabs = {
                 {"Ana Sayfa", "dashboard"},
@@ -133,7 +154,7 @@ public class DashboardScene {
             cell.setAlignment(Pos.CENTER);
             cell.setPadding(new Insets(12, 0, 0, 0));
             cell.setStyle("-fx-cursor: hand;");
-            HBox.setHgrow(cell, Priority.ALWAYS); // ← responsive
+            HBox.setHgrow(cell, Priority.ALWAYS);
 
             Label lbl = new Label(tab[0]);
             lbl.setFont(Font.font("Arial", FontWeight.BOLD, 13));
@@ -152,12 +173,11 @@ public class DashboardScene {
         }
 
         VBox wrap = new VBox(0, bar);
+        wrap.setMaxWidth(Double.MAX_VALUE);
         Region sep = new Region(); sep.setPrefHeight(1);
         sep.setStyle("-fx-background-color: #2A3050;");
         wrap.getChildren().add(sep);
-        HBox outer = new HBox(wrap);
-        HBox.setHgrow(wrap, Priority.ALWAYS);
-        return outer;
+        return wrap;
     }
 
     private static ScrollPane createScrollContent(ILeague league, ITeam team) {
@@ -183,6 +203,7 @@ public class DashboardScene {
     private static HBox createInfoCard(ILeague league, ITeam team) {
         HBox card = new HBox(0);
         card.setStyle("-fx-background-color: " + CARD + "; -fx-background-radius: 10;");
+        card.setMaxWidth(Double.MAX_VALUE);
 
         int week   = league != null ? league.getCurrentWeek() : 0;
         int season = league != null ? league.getCurrentSeason() : 1;
@@ -237,9 +258,13 @@ public class DashboardScene {
 
         IMatch next = findNextMatch(league, team);
         if (next == null) {
-            Label done = new Label("Sezon tamamlandı — fikstür bitti.");
+            String msg = league.isSeasonOver()
+                    ? "Sezon tamamlandı — fikstür bitti."
+                    : "Bu hafta maçınız yok — ▶ İLERLE ile devam edebilirsiniz.";
+            Label done = new Label(msg);
             done.setFont(Font.font("Arial", 13));
             done.setTextFill(Color.web(SUBTEXT));
+            done.setWrapText(true);
             card.getChildren().addAll(title, done);
             return card;
         }

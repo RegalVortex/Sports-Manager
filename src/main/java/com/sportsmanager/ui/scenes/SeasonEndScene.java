@@ -3,6 +3,7 @@ package com.sportsmanager.ui.scenes;
 import com.sportsmanager.core.*;
 import com.sportsmanager.ui.SceneManager;
 import javafx.geometry.Insets;
+import java.util.ArrayList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -60,7 +61,7 @@ public class SeasonEndScene {
         StackPane.setAlignment(content, Pos.TOP_CENTER);
         outer.getChildren().add(content);
 
-        return new Scene(outer);
+        return new Scene(outer, 480, 850);
     }
 
     private static VBox buildHero(ITeam champion, boolean isChamp) {
@@ -174,7 +175,7 @@ public class SeasonEndScene {
 
         if (playerTeam == null) return section;
 
-        List<IPlayer> squad = playerTeam.getSquad();
+        List<IPlayer> squad = new ArrayList<>(playerTeam.getSquad());
         squad.sort((a, b) -> b.getOverallRating() - a.getOverallRating());
         int limit = Math.min(5, squad.size());
 

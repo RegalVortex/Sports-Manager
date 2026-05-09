@@ -17,12 +17,9 @@ import java.util.List;
 
 public class TeamSelectScene {
 
+    private static final int MAX_W = 600;
+
     public static Scene create() {
-        VBox root = new VBox();
-        root.setStyle("-fx-background-color: #0D0D0D;");
-
-        VBox header = createHeader();
-
         String sport = SceneManager.getInstance().getSelectedSport();
         String leagueName = SceneManager.getInstance().getSelectedLeague();
 
@@ -35,10 +32,14 @@ public class TeamSelectScene {
             }
         }
 
+        VBox body = new VBox(0);
+        body.setStyle("-fx-background-color: #0D0D0D;");
+        body.getChildren().add(createHeader());
+
         VBox listBox = new VBox(12);
         listBox.setPadding(new Insets(20, 30, 30, 30));
 
-        Label selectLabel = new Label("Select Your Team:");
+        Label selectLabel = new Label("Takımını Seç:");
         selectLabel.setFont(Font.font("Arial", FontWeight.BOLD, 16));
         selectLabel.setTextFill(Color.web("#F0A500"));
         listBox.getChildren().add(selectLabel);
@@ -54,9 +55,18 @@ public class TeamSelectScene {
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background: #0D0D0D; -fx-background-color: #0D0D0D;");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
+        body.getChildren().add(scrollPane);
+        VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        root.getChildren().addAll(header, scrollPane);
-        return new Scene(root);
+        BorderPane content = new BorderPane(body);
+        content.setStyle("-fx-background-color: #0D0D0D;");
+        content.setMaxWidth(MAX_W);
+
+        StackPane outer = new StackPane(content);
+        outer.setStyle("-fx-background-color: #0D0D0D;");
+        StackPane.setAlignment(content, Pos.TOP_CENTER);
+
+        return new Scene(outer, 480, 850);
     }
 
     private static VBox createHeader() {
@@ -75,13 +85,13 @@ public class TeamSelectScene {
                 SceneManager.getInstance().navigateTo("leagueselect")
         );
 
-        Label titleLabel = new Label("TEAM SELECTION");
+        Label titleLabel = new Label("TAKIM SEÇİMİ");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         titleLabel.setTextFill(Color.web("#F0A500"));
 
         topRow.getChildren().addAll(backBtn, titleLabel);
 
-        Label subtitleLabel = new Label("Choose the team you want to manage");
+        Label subtitleLabel = new Label("Yönetmek istediğin takımı seç");
         subtitleLabel.setFont(Font.font("Arial", 13));
         subtitleLabel.setTextFill(Color.web("#8A8A9A"));
         subtitleLabel.setPadding(new Insets(0, 0, 0, 32));

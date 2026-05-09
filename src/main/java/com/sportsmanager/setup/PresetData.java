@@ -12,28 +12,32 @@ public class PresetData {
         if ("football".equalsIgnoreCase(sportName)) {
             leagues.add(new LeaguePreset(
                     "football",
-                    "Turkish Football League",
-                    Arrays.asList("Galatasaray", "Fenerbahce", "Besiktas", "Trabzonspor")
+                    "Türkiye Futbol Ligi",
+                    Arrays.asList("Galatasaray", "Fenerbahçe", "Beşiktaş", "Trabzonspor",
+                                  "Başakşehir", "Sivasspor", "Kasımpaşa", "Ankaragücü")
             ));
 
             leagues.add(new LeaguePreset(
                     "football",
-                    "European Football League",
-                    Arrays.asList("Madrid FC", "London United", "Milan City", "Paris Stars")
+                    "Avrupa Futbol Ligi",
+                    Arrays.asList("Madrid FC", "London United", "Milan City", "Paris Stars",
+                                  "Bayern Munchen", "Ajax Amsterdam", "Porto FC", "Celtic FC")
             ));
         }
 
         if ("volleyball".equalsIgnoreCase(sportName)) {
             leagues.add(new LeaguePreset(
                     "volleyball",
-                    "Turkish Volleyball League",
-                    Arrays.asList("VakifBank", "Eczacibasi", "Fenerbahce Volleyball", "Galatasaray Volleyball")
+                    "Türkiye Voleybol Ligi",
+                    Arrays.asList("VakıfBank", "Eczacıbaşı", "Fenerbahçe Voleybol", "Galatasaray Voleybol",
+                                  "Arkas Spor", "Halkbank", "Ziraat Bankası", "İstanbul BBSK")
             ));
 
             leagues.add(new LeaguePreset(
                     "volleyball",
-                    "European Volleyball League",
-                    Arrays.asList("Berlin Spikers", "Rome Volley", "Paris Blockers", "Madrid Servers")
+                    "Avrupa Voleybol Ligi",
+                    Arrays.asList("Berlin Spikers", "Rome Volley", "Paris Blockers", "Madrid Servers",
+                                  "Perugia", "Trentino", "Monza", "Modena")
             ));
         }
 

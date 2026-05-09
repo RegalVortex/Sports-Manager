@@ -18,12 +18,9 @@ import java.util.List;
 
 public class LeagueSelectScene {
 
+    private static final int MAX_W = 600;
+
     public static Scene create() {
-        VBox root = new VBox();
-        root.setStyle("-fx-background-color: #0D0D0D;");
-
-        VBox header = createHeader();
-
         String sport = SceneManager.getInstance().getSelectedSport();
         List<LeaguePreset> leagues = PresetData.getLeaguesForSport(sport);
 
@@ -40,8 +37,19 @@ public class LeagueSelectScene {
         scrollPane.setStyle("-fx-background: #0D0D0D; -fx-background-color: #0D0D0D;");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        root.getChildren().addAll(header, scrollPane);
-        return new Scene(root);
+        VBox body = new VBox(0, createHeader(), scrollPane);
+        body.setStyle("-fx-background-color: #0D0D0D;");
+        VBox.setVgrow(scrollPane, Priority.ALWAYS);
+
+        BorderPane content = new BorderPane(body);
+        content.setStyle("-fx-background-color: #0D0D0D;");
+        content.setMaxWidth(MAX_W);
+
+        StackPane outer = new StackPane(content);
+        outer.setStyle("-fx-background-color: #0D0D0D;");
+        StackPane.setAlignment(content, Pos.TOP_CENTER);
+
+        return new Scene(outer, 480, 850);
     }
 
     private static VBox createHeader() {
@@ -60,13 +68,13 @@ public class LeagueSelectScene {
                 SceneManager.getInstance().navigateTo("sportselect")
         );
 
-        Label titleLabel = new Label("LEAGUE SELECTION");
+        Label titleLabel = new Label("LİG SEÇİMİ");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         titleLabel.setTextFill(Color.web("#F0A500"));
 
         topRow.getChildren().addAll(backBtn, titleLabel);
 
-        Label subtitleLabel = new Label("Choose a league to start your career");
+        Label subtitleLabel = new Label("Kariyerine başlamak için bir lig seç");
         subtitleLabel.setFont(Font.font("Arial", 13));
         subtitleLabel.setTextFill(Color.web("#8A8A9A"));
         subtitleLabel.setPadding(new Insets(0, 0, 0, 32));
@@ -104,7 +112,7 @@ public class LeagueSelectScene {
         nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 15));
         nameLabel.setTextFill(Color.web("#F0A500"));
 
-        Label countLabel = new Label(league.getTeamNames().size() + " Teams");
+        Label countLabel = new Label(league.getTeamNames().size() + " Takım");
         countLabel.setFont(Font.font("Arial", 12));
         countLabel.setTextFill(Color.web("#8A8A9A"));
 

@@ -66,7 +66,7 @@ public class SquadScene {
         StackPane.setAlignment(content, Pos.TOP_CENTER);
         outer.getChildren().add(content);
 
-        return new Scene(outer);
+        return new Scene(outer, 480, 850);
     }
 
     private static HBox createTopBar(ITeam team) {
@@ -387,9 +387,19 @@ public class SquadScene {
         return o >= 80 ? GOLD : o >= 70 ? GREEN : o >= 60 ? "#2196F3" : SUBTEXT;
     }
     private static String formColor(int f) {
-        return f >= 80 ? GREEN : f >= 60 ? "#FF9800" : RED;
+        switch (f) {
+            case 3: return GOLD;
+            case 2: return GREEN;
+            case 1: return "#FF9800";
+            default: return RED;
+        }
     }
     private static String formText(int f) {
-        return f >= 80 ? "İyi" : f >= 60 ? "Orta" : "Kötü";
+        switch (f) {
+            case 3: return "Mükemmel";
+            case 2: return "İyi";
+            case 1: return "Normal";
+            default: return "Kötü";
+        }
     }
 }

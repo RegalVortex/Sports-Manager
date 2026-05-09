@@ -18,6 +18,7 @@ public class MainMenuScene {
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-background-color: #0D0D0D;");
         root.setPadding(new Insets(60, 30, 40, 30));
+        root.setMaxWidth(600);
 
         // Logo alanı
         Label logo = new Label("SPORTS\nMANAGER");
@@ -38,9 +39,9 @@ public class MainMenuScene {
         VBox menuBox = new VBox(15);
         menuBox.setAlignment(Pos.CENTER);
 
-        HBox newGameBtn = createMenuButton("⚽  New Game", "Start a new career", true);
-        HBox loadGameBtn = createMenuButton("💾  Load Game", "Continue saved game", false);
-        HBox exitBtn = createMenuButton("✕  Exit", "Quit the game", false);
+        HBox newGameBtn = createMenuButton("⚽  Yeni Oyun", "Yeni bir kariyer başlat", true);
+        HBox loadGameBtn = createMenuButton("💾  Oyunu Yükle", "Kayıtlı oyuna devam et", false);
+        HBox exitBtn = createMenuButton("✕  Çıkış", "Oyundan çık", false);
 
         newGameBtn.setOnMouseClicked(e ->
                 SceneManager.getInstance().navigateTo("sportselect")
@@ -60,7 +61,11 @@ public class MainMenuScene {
 
         root.getChildren().addAll(logoBox, menuBox, footer);
 
-        return new Scene(root);
+        StackPane outer = new StackPane(root);
+        outer.setStyle("-fx-background-color: #0D0D0D;");
+        StackPane.setAlignment(root, Pos.CENTER);
+
+        return new Scene(outer, 480, 850);
     }
 
     private static HBox createMenuButton(String title, String subtitle, boolean highlighted) {
