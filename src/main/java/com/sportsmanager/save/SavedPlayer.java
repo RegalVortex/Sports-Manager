@@ -14,6 +14,8 @@ public class SavedPlayer implements Serializable {
     private int form;
     private int age;
     private int potential;
+    private int matchesPlayed;
+    private int weeksInjured;
 
     public SavedPlayer(String name,
                        String position,
@@ -22,7 +24,9 @@ public class SavedPlayer implements Serializable {
                        int injuryGamesRemaining,
                        int form,
                        int age,
-                       int potential) {           // <-- bunu ekle
+                       int potential,
+                       int matchesPlayed,
+                       int weeksInjured) {
         this.name = name;
         this.position = position;
         this.attributes = new HashMap<>(attributes);
@@ -31,30 +35,18 @@ public class SavedPlayer implements Serializable {
         this.form = form;
         this.age = age;
         this.potential = potential;
+        this.matchesPlayed = matchesPlayed;
+        this.weeksInjured = weeksInjured;
     }
 
-    public int getAge() { return age; }
-    public int getPotential() { return potential; }
-    public int getForm() {
-        return form;
-    }
-    public String getName() {
-        return name;
-    }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public Map<String, Integer> getAttributes() {
-        return attributes;
-    }
-
-    public boolean isInjured() {
-        return injured;
-    }
-
-    public int getInjuryGamesRemaining() {
-        return injuryGamesRemaining;
-    }
+    public String getName()                  { return name; }
+    public String getPosition()              { return position; }
+    public Map<String, Integer> getAttributes() { return attributes; }
+    public boolean isInjured()               { return injured; }
+    public int getInjuryGamesRemaining()     { return injuryGamesRemaining; }
+    public int getForm()                     { return form; }
+    public int getAge()                      { return age; }
+    public int getPotential()                { return potential; }
+    public int getMatchesPlayed()            { return matchesPlayed; }
+    public int getWeeksInjured()             { return weeksInjured; }
 }

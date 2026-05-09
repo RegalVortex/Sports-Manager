@@ -176,6 +176,14 @@ public abstract class AbstractPlayer implements IPlayer {
     public void setPotential(int potential) {
         this.potential = Math.min(Math.max(potential, 50), 99);
     }
+
+    public void setMatchesPlayed(int matchesPlayed) {
+        this.matchesPlayed = Math.max(0, matchesPlayed);
+    }
+
+    public void setWeeksInjured(int weeksInjured) {
+        this.weeksInjured = Math.max(0, weeksInjured);
+    }
     @Override
     public int getOverallRating() {
        if (attributes.isEmpty()){

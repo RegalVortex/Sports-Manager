@@ -1,6 +1,7 @@
 package com.sportsmanager.save;
 
 import com.sportsmanager.core.ILeague;
+import com.sportsmanager.core.IPlayer;
 import com.sportsmanager.core.ISport;
 import com.sportsmanager.core.ITeam;
 import com.sportsmanager.core.SportRegistry;
@@ -147,5 +148,67 @@ class SaveLoadServiceTest {
         String restoredTactic = loaded.getPlayerTeam().getTactic().getName();
         assertEquals("DEFENSIVE", restoredTactic,
                 "Volleyball tactic DEFENSIVE should be restored, but was: " + restoredTactic);
+    }
+
+    @Test
+    void matchesPlayedShouldBeRestoredForPlayers() {
+        FootballSportFactory factory = new FootballSportFactory();
+        ISport sport = factory.createSport();
+
+        ITeam teamA = factory.createTeam("Galatasaray", "gala.png");
+        ITeam teamB = factory.createTeam("Fenerbahçe",  "fb.png");
+
+        // Manually advance matchesPlayed on all players of teamA
+        for (IPlayer p : teamA.getSquad()) {
+            p.incrementMatchesPlayed();
+            p.incrementMatchesPlayed();  // simulate 2 matches
+        }
+
+        List<ITeam> teams = new ArrayList<>();
+        teams.add(teamA);
+        teams.add(teamB);
+
+        ILeague league = factory.createLeague("Test Lig", teams);
+        String savePath = tempDir.getAbsolutePath() + File.separator + "test_matches_played.dat";
+        SaveLoadService.saveGame(savePath, sport, league, teamA);
+
+        SportRegistry registry = new SportRegistry();
+        LoadedGame loaded = SaveLoadService.loadGame(savePath, registry);
+
+        assertNotNull(loaded);
+        ITeam restoredTeam = loaded.getPlayerTeam();
+        for (IPlayer p : restoredTeam.getSquad()) {
+            assertEquals(2, p.getMatchesPlayed(),
+                    "matchesPlayed should be 2 after restore for player: " + p.getName());
+        }
+    }
+
+    @Test
+    void currentSeasonShouldBeRestoredAfterSaveAndLoad() {
+        FootballSportFactory factory = new FootballSportFactory();
+        ISport sport = factory.createSport();
+
+        ITeam teamA = factory.createTeam("Beşiktaş",    "bjk.png");
+        ITeam teamB = factory.createTeam("Trabzonspor", "ts.png");
+
+        List<ITeam> teams = new ArrayList<>();
+        teams.add(teamA);
+        teams.add(teamB);
+
+        ILeague league = factory.createLeague("Test Lig", teams);
+
+        // Simulate being in season 3
+        league.resetSeason(); // season 2
+        league.resetSeason(); // season 3
+
+        String savePath = tempDir.getAbsolutePath() + File.separator + "test_season.dat";
+        SaveLoadService.saveGame(savePath, sport, league, teamA);
+
+        SportRegistry registry = new SportRegistry();
+        LoadedGame loaded = SaveLoadService.loadGame(savePath, registry);
+
+        assertNotNull(loaded);
+        assertEquals(3, loaded.getLeague().getCurrentSeason(),
+                "currentSeason should be 3 after restore");
     }
 }

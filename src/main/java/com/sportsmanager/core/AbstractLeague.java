@@ -190,6 +190,10 @@ public abstract class AbstractLeague implements ILeague {
         this.currentWeek = currentWeek;
     }
 
+    public void setCurrentSeason(int currentSeason) {
+        this.currentSeason = Math.max(1, currentSeason);
+    }
+
     public void resetSeason() {
         for (ITeam team : teams) {
             team.resetPoints();

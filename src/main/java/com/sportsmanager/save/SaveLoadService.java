@@ -44,8 +44,10 @@ public class SaveLoadService {
                         player.isInjured(),
                         player.getInjuryGamesRemaining(),
                         player.getForm(),
-                        player.getAge(),        // YENİ
-                        player.getPotential()   // YENİ
+                        player.getAge(),
+                        player.getPotential(),
+                        player.getMatchesPlayed(),
+                        player.getWeeksInjured()
                 );
                 savedPlayers.add(savedPlayer);
             }
@@ -89,6 +91,7 @@ public class SaveLoadService {
                 league.getName(),
                 playerTeam.getName(),
                 league.getCurrentWeek(),
+                league.getCurrentSeason(),
                 savedTeams,
                 savedMatches
         );
@@ -130,13 +133,13 @@ public class SaveLoadService {
                     }
                     player.setForm(savedPlayer.getForm());
 
-// YENİ — age ve potential restore
                     if (player instanceof AbstractPlayer) {
                         AbstractPlayer abstractPlayer = (AbstractPlayer) player;
                         abstractPlayer.setAge(savedPlayer.getAge());
                         abstractPlayer.setPotential(savedPlayer.getPotential());
+                        abstractPlayer.setMatchesPlayed(savedPlayer.getMatchesPlayed());
+                        abstractPlayer.setWeeksInjured(savedPlayer.getWeeksInjured());
                     }
-                    // <-- bunu ekle
 
                     abstractTeam.addPlayerToSquad(player);
                 }
@@ -169,7 +172,9 @@ public class SaveLoadService {
         ILeague league = factory.createLeague(data.getLeagueName(), teams);
 
         if (league instanceof AbstractLeague) {
-            ((AbstractLeague) league).setCurrentWeek(data.getCurrentWeek());
+            AbstractLeague abstractLeague = (AbstractLeague) league;
+            abstractLeague.setCurrentWeek(data.getCurrentWeek());
+            abstractLeague.setCurrentSeason(data.getCurrentSeason());
         }
 
         restoreMatches(data, league);

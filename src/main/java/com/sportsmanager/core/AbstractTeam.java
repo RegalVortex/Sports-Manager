@@ -158,7 +158,12 @@ public void substitutePlayer(IPlayer out, IPlayer in) {
         for (int i = 0; i < currentLineup.size(); i++) {
             IPlayer player = currentLineup.get(i);
             if (player.isInjured()) {
-                IPlayer replacement = findHealthyBenchPlayer(currentLineup);
+                // First try to find a position-matched bench player
+                IPlayer replacement = findHealthyBenchPlayer(player.getPosition(), currentLineup);
+                // Fall back to any healthy bench player if no positional match
+                if (replacement == null) {
+                    replacement = findHealthyBenchPlayer(null, currentLineup);
+                }
                 if (replacement != null) {
                     currentLineup.set(i, replacement);
                     changed = true;
@@ -171,10 +176,17 @@ public void substitutePlayer(IPlayer out, IPlayer in) {
         }
     }
 
-    private IPlayer findHealthyBenchPlayer(List<IPlayer> currentLineup) {
+    /**
+     * Finds a healthy bench player (not in {@code currentLineup}).
+     * If {@code requiredPosition} is non-null, only players matching that
+     * position are considered; otherwise any healthy bench player is returned.
+     */
+    private IPlayer findHealthyBenchPlayer(String requiredPosition, List<IPlayer> currentLineup) {
         for (IPlayer player : squad) {
             if (!player.isInjured() && !currentLineup.contains(player)) {
-                return player;
+                if (requiredPosition == null || requiredPosition.equals(player.getPosition())) {
+                    return player;
+                }
             }
         }
         return null;
