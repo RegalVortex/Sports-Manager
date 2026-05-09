@@ -51,6 +51,6 @@ public class FootballSportFactory implements SportFactory {
 
     @Override
     public List<ITactic> getAvailableTactics() {
-        return new ArrayList<ITactic>(FootballTactic.standardFormations());
+        return new ArrayList<>(FootballTactic.standardFormations());
     }
 }

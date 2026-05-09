@@ -32,13 +32,15 @@ class FootballPlayerTest {
 
     @Test
     void trainingShouldIncreaseAttribute() {
+        // AbstractPlayer.train() adds a potential bonus for young players (age<=23),
+        // so the increase may be >= 5, not exactly 5. We assert at least +5.
         FootballPlayer player = new FootballPlayer("Player2", "ST");
 
         int before = player.getAttributes().get("shooting");
         player.train("shooting", 5);
         int after = player.getAttributes().get("shooting");
 
-        assertEquals(before + 5, after);
+        assertTrue(after >= before + 5, "Shooting should increase by at least 5");
     }
 
     @Test
@@ -74,11 +76,32 @@ class FootballPlayerTest {
     }
 
     @Test
-    void generatedRandomPlayerShouldHaveCorrectNameAndPosition() {
-        FootballPlayer player = FootballPlayer.generateRandom("ST", "Random Striker");
+    void generatedRandomPlayerShouldHaveCorrectPosition() {
+        // İsim artık rastgele üretiliyor; yalnızca pozisyon ve boş-olmayan isim doğrulanır.
+        FootballPlayer player = FootballPlayer.generateRandom("ST");
 
-        assertEquals("Random Striker", player.getName());
         assertEquals("ST", player.getPosition());
+        assertNotNull(player.getName());
+        assertFalse(player.getName().isBlank());
+    }
+
+    @Test
+    void generatedRandomPlayerShouldHavePositionSpecificAttributes() {
+        // Kural: GK defending min 70, ST defending max 52 — üretilen değerler aralıkta olmalı.
+        FootballPlayer gk = FootballPlayer.generateRandom("GK");
+        FootballPlayer st = FootballPlayer.generateRandom("ST");
+
+        // Her nitelik 1-99 arasında olmalı
+        for (int v : gk.getAttributes().values()) {
+            assertTrue(v >= 1 && v <= 99, "GK attribute out of range: " + v);
+        }
+        for (int v : st.getAttributes().values()) {
+            assertTrue(v >= 1 && v <= 99, "ST attribute out of range: " + v);
+        }
+
+        // GK'nın min defending aralığı (70) ST'nin max aralığından (52) yüksek olmalı
+        assertTrue(gk.getAttributes().get("defending") >= 70);
+        assertTrue(st.getAttributes().get("defending") <= 52);
     }
 
     @Test

@@ -156,7 +156,7 @@ public class SaveLoadService {
                 abstractTeam.setStartingLineup(lineup);
                 abstractTeam.setPoints(savedTeam.getPoints());
                 abstractTeam.setCoach(factory.createCoach(savedTeam.getCoachName(), savedTeam.getCoachSpecialty()));
-                abstractTeam.setTactic(factory.createDefaultTactic());
+                abstractTeam.setTactic(resolveTactic(factory, savedTeam.getTacticName()));
             }
 
             teams.add(team);
@@ -175,6 +175,23 @@ public class SaveLoadService {
         restoreMatches(data, league);
 
         return new LoadedGame(sport, league, playerTeam);
+    }
+
+    /**
+     * Kaydedilen taktik adını factory'nin mevcut taktikleri içinde arar.
+     * Bulamazsa varsayılan taktiği döndürür.
+     */
+    private static ITactic resolveTactic(SportFactory factory, String tacticName) {
+        if (tacticName == null || tacticName.isEmpty()) {
+            return factory.createDefaultTactic();
+        }
+        for (ITactic tactic : factory.getAvailableTactics()) {
+            if (tactic.getName().equalsIgnoreCase(tacticName)) {
+                return tactic;
+            }
+        }
+        // Kayıtlı isim bulunamadıysa varsayılana dön
+        return factory.createDefaultTactic();
     }
 
     private static void restoreMatches(GameSaveData data, ILeague league) {

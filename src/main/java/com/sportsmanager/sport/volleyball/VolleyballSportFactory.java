@@ -51,6 +51,6 @@ public class VolleyballSportFactory implements SportFactory {
 
     @Override
     public List<ITactic> getAvailableTactics() {
-        return new ArrayList<ITactic>(VolleyballTactic.standardFormations());
+        return new ArrayList<>(VolleyballTactic.standardFormations());
     }
 }

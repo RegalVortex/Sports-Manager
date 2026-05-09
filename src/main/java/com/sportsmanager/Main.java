@@ -152,39 +152,19 @@ public class Main {
         List<ITactic> tactics = factory.getAvailableTactics();
 
         System.out.println("\n=== Change Tactic ===");
-        System.out.println("1. Defensive");
-        System.out.println("2. Balanced");
-        System.out.println("3. Aggressive");
+        System.out.println("Current: " + (team.getTactic() != null ? team.getTactic().getName() : "—"));
+        System.out.println();
 
-        int choice = readChoice(1, 3);
-
-        ITactic selectedTactic = null;
-
-        if (choice == 1) {
-            selectedTactic = findTactic(tactics, "5-3-2", "DEFENSIVE");
-        } else if (choice == 2) {
-            selectedTactic = findTactic(tactics, "4-4-2", "BALANCED");
-        } else if (choice == 3) {
-            selectedTactic = findTactic(tactics, "4-3-3", "OFFENSIVE");
+        for (int i = 0; i < tactics.size(); i++) {
+            ITactic t = tactics.get(i);
+            System.out.printf("%d. %-15s  (Atk: %.2f  Def: %.2f)%n",
+                    i + 1, t.getName(), t.getAttackModifier(), t.getDefenseModifier());
         }
 
-        if (selectedTactic != null) {
-            team.setTactic(selectedTactic);
-            System.out.println("Tactic changed to: " + selectedTactic.getName());
-        } else {
-            System.out.println("Tactic could not be changed.");
-        }
-    }
-
-    private static ITactic findTactic(List<ITactic> tactics, String... possibleNames) {
-        for (ITactic tactic : tactics) {
-            for (String name : possibleNames) {
-                if (tactic.getName().equalsIgnoreCase(name)) {
-                    return tactic;
-                }
-            }
-        }
-        return null;
+        int choice = readChoice(1, tactics.size());
+        ITactic selected = tactics.get(choice - 1);
+        team.setTactic(selected);
+        System.out.println("Tactic changed to: " + selected.getName());
     }
 
 
@@ -277,6 +257,7 @@ public class Main {
         generateNews(league, playerTeam, playerTeamResult, newInjuries);
         showWeeklySummary(league, playerTeam, playerTeamResult, newInjuries);
     }
+
     private static void generateNews(ILeague league, ITeam playerTeam, MatchResult playerTeamResult, int newInjuries) {
         List<ITeam> rankedTeams = league.getStandings().getTeams();
 
@@ -333,6 +314,7 @@ public class Main {
             System.out.println("- " + newsFeed.get(i));
         }
     }
+
     private static int countTotalInjuredPlayers(ILeague league) {
         int count = 0;
 
@@ -342,6 +324,7 @@ public class Main {
 
         return count;
     }
+
     private static void showWeeklySummary(ILeague league, ITeam playerTeam, MatchResult playerTeamResult, int newInjuries) {
         System.out.println("\n=== Weekly Summary ===");
 
@@ -358,6 +341,7 @@ public class Main {
         System.out.println("Next Week: " + league.getCurrentWeek());
         System.out.println("======================");
     }
+
     private static void showMatchPreview(List<IMatch> weeklyMatches, ITeam playerTeam) {
         for (IMatch match : weeklyMatches) {
             boolean playerTeamIsHome = match.getHomeTeam().equals(playerTeam);
@@ -452,6 +436,7 @@ public class Main {
             System.out.println("Substitution failed. The lineup rules may have been violated.");
         }
     }
+
     private static void printStandings(ILeague league) {
         System.out.println("\n=== Standings ===");
         System.out.printf("%-4s %-26s %-5s %-5s %-5s %-6s%n",

@@ -101,5 +101,18 @@ class MatchResultTest {
         public int getPoints() {
             return 0;
         }
+
+        @Override
+        public void setCoach(ICoach coach) {
+        }
+
+        @Override
+        public void resetPoints() {
+        }
+
+        @Override
+        public int getTeamOverallRating() {
+            return 50;
+        }
     }
 }
