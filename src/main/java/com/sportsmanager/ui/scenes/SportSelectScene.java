@@ -35,10 +35,10 @@ public class SportSelectScene {
         BorderPane content = new BorderPane(root);
         content.setStyle("-fx-background-color: #0D0D0D;");
         content.setMaxWidth(MAX_W);
+        content.setMaxHeight(Double.MAX_VALUE);
 
         StackPane outer = new StackPane(content);
         outer.setStyle("-fx-background-color: #0D0D0D;");
-        StackPane.setAlignment(content, Pos.TOP_CENTER);
 
         return new Scene(outer, 480, 850);
     }

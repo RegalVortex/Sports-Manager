@@ -48,7 +48,7 @@ public class DashboardScene {
 
         content.setCenter(createScrollContent(league, team));
 
-        StackPane.setAlignment(content, Pos.TOP_CENTER);
+        content.setMaxHeight(Double.MAX_VALUE);
         outer.getChildren().add(content);
 
         return new Scene(outer, 480, 850);
@@ -193,8 +193,9 @@ public class DashboardScene {
         content.getChildren().add(pad);
 
         ScrollPane scroll = new ScrollPane(content);
-        scroll.setFitToWidth(true);  // ← genişliğe uyar
+        scroll.setFitToWidth(true);
         scroll.setFitToHeight(false);
+        scroll.setMaxHeight(Double.MAX_VALUE);
         scroll.setStyle("-fx-background: " + BG + "; -fx-background-color: " + BG + "; -fx-border-color: transparent;");
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         return scroll;

@@ -39,6 +39,10 @@ public class SceneManager {
         this.primaryStage.setMinWidth(360);
         this.primaryStage.setMinHeight(600);
         this.primaryStage.setResizable(true);
+        // Büyük ekranlarda da düzgün görünmesi için maksimum genişliği serbest bırak
+        // İçerik zaten maxWidth=600 ile ortalanmış; arka plan rengi doldurur
+        this.primaryStage.setMaxWidth(Double.MAX_VALUE);
+        this.primaryStage.setMaxHeight(Double.MAX_VALUE);
     }
 
     public void register(String name, Supplier<Scene> sceneSupplier) {
@@ -51,10 +55,22 @@ public class SceneManager {
             System.out.println("Scene not found: " + name);
             return;
         }
+        // Mevcut boyut/durum kaydet — setScene sonrası geri yükle
+        boolean isShowing    = primaryStage.isShowing();
+        boolean wasMaximized = isShowing && primaryStage.isMaximized();
+        double  currentW     = isShowing ? primaryStage.getWidth()  : 480;
+        double  currentH     = isShowing ? primaryStage.getHeight() : 850;
+
         Scene scene = supplier.get();
-        // Sahneyi stage'e bağla — boyut otomatik uyar
-        scene.getRoot().prefWidth(primaryStage.getWidth());
         primaryStage.setScene(scene);
+
+        if (wasMaximized) {
+            // Maximize durumunu koru (setScene bunu sıfırlayabilir)
+            primaryStage.setMaximized(true);
+        } else {
+            primaryStage.setWidth(currentW);
+            primaryStage.setHeight(currentH);
+        }
         primaryStage.show();
     }
 

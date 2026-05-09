@@ -45,10 +45,12 @@ public class SquadScene {
         content.setTop(createTopBar(team));
 
         VBox body = new VBox(0);
+        body.setMaxHeight(Double.MAX_VALUE);
         body.getChildren().add(createSubTabBar());
 
         ScrollPane scroll = new ScrollPane();
         scroll.setFitToWidth(true);
+        scroll.setMaxHeight(Double.MAX_VALUE);
         scroll.setStyle("-fx-background: " + BG + "; -fx-background-color: " + BG + "; -fx-border-color: transparent;");
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         VBox.setVgrow(scroll, Priority.ALWAYS);
@@ -60,10 +62,9 @@ public class SquadScene {
         }
 
         body.getChildren().add(scroll);
-        VBox.setVgrow(scroll, Priority.ALWAYS);
         content.setCenter(body);
 
-        StackPane.setAlignment(content, Pos.TOP_CENTER);
+        content.setMaxHeight(Double.MAX_VALUE);
         outer.getChildren().add(content);
 
         return new Scene(outer, 480, 850);

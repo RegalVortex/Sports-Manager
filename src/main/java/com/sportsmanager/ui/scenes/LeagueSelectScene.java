@@ -34,20 +34,21 @@ public class LeagueSelectScene {
 
         ScrollPane scrollPane = new ScrollPane(listBox);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: #0D0D0D; -fx-background-color: #0D0D0D;");
-        VBox.setVgrow(scrollPane, Priority.ALWAYS);
+        scrollPane.setFitToHeight(false);
+        scrollPane.setMaxHeight(Double.MAX_VALUE);
+        scrollPane.setStyle("-fx-background: #0D0D0D; -fx-background-color: #0D0D0D; -fx-border-color: transparent;");
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        VBox body = new VBox(0, createHeader(), scrollPane);
-        body.setStyle("-fx-background-color: #0D0D0D;");
-        VBox.setVgrow(scrollPane, Priority.ALWAYS);
-
-        BorderPane content = new BorderPane(body);
+        // Header sabit (üst), scroll kalan yüksekliği doldurur
+        BorderPane content = new BorderPane();
         content.setStyle("-fx-background-color: #0D0D0D;");
         content.setMaxWidth(MAX_W);
+        content.setMaxHeight(Double.MAX_VALUE);
+        content.setTop(createHeader());
+        content.setCenter(scrollPane);
 
         StackPane outer = new StackPane(content);
         outer.setStyle("-fx-background-color: #0D0D0D;");
-        StackPane.setAlignment(content, Pos.TOP_CENTER);
 
         return new Scene(outer, 480, 850);
     }

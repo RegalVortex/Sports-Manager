@@ -35,13 +35,6 @@ public class SeasonEndScene {
         ITeam   champion   = league != null ? league.getChampion() : null;
         boolean isChamp    = champion != null && playerTeam != null && champion.equals(playerTeam);
 
-        StackPane outer = new StackPane();
-        outer.setStyle("-fx-background-color: " + BG + ";");
-
-        BorderPane content = new BorderPane();
-        content.setStyle("-fx-background-color: " + BG + ";");
-        content.setMaxWidth(MAX_W);
-
         VBox body = new VBox(0);
         body.setStyle("-fx-background-color: " + BG + ";");
         body.getChildren().add(buildHero(champion, isChamp));
@@ -49,17 +42,22 @@ public class SeasonEndScene {
         body.getChildren().add(buildTopPlayers(playerTeam));
         body.getChildren().add(buildActions(league));
 
-        Region pad = new Region(); pad.setPrefHeight(30);
+        Region pad = new Region(); pad.setPrefHeight(40);
         body.getChildren().add(pad);
 
+        // ScrollPane'i doğrudan StackPane'e koy — BorderPane aracısı yok.
+        // setFitToWidth body'yi scroll genişliğine uyarlar; yükseklik serbest.
         ScrollPane scroll = new ScrollPane(body);
         scroll.setFitToWidth(true);
+        scroll.setFitToHeight(false);
+        scroll.setMaxWidth(MAX_W);
+        scroll.setMaxHeight(Double.MAX_VALUE);
         scroll.setStyle("-fx-background: " + BG + "; -fx-background-color: " + BG + "; -fx-border-color: transparent;");
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        content.setCenter(scroll);
+        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        StackPane.setAlignment(content, Pos.TOP_CENTER);
-        outer.getChildren().add(content);
+        StackPane outer = new StackPane(scroll);
+        outer.setStyle("-fx-background-color: " + BG + ";");
 
         return new Scene(outer, 480, 850);
     }

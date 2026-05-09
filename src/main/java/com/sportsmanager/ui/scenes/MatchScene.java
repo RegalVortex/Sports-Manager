@@ -77,9 +77,9 @@ public class MatchScene {
         BorderPane content = new BorderPane();
         content.setStyle("-fx-background-color: " + BG + ";");
         content.setMaxWidth(MAX_W);
+        content.setMaxHeight(Double.MAX_VALUE);
         content.setCenter(buildMainContent());
 
-        StackPane.setAlignment(content, Pos.TOP_CENTER);
         outer.getChildren().add(content);
 
         if (currentPeriod == 0 && !matchFinished) {
@@ -99,12 +99,14 @@ public class MatchScene {
     // ── Main Content ──────────────────────────────────────────────────────────
     private static VBox buildMainContent() {
         VBox vbox = new VBox(0);
+        vbox.setMaxHeight(Double.MAX_VALUE);
         vbox.setStyle("-fx-background-color: " + BG + ";");
         vbox.getChildren().add(buildMatchHeader());
         vbox.getChildren().add(buildScoreBoard());
 
         ScrollPane scroll = new ScrollPane();
         scroll.setFitToWidth(true);
+        scroll.setMaxHeight(Double.MAX_VALUE);
         scroll.setStyle("-fx-background: " + BG + "; -fx-background-color: " + BG + "; -fx-border-color: transparent;");
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         VBox.setVgrow(scroll, Priority.ALWAYS);
