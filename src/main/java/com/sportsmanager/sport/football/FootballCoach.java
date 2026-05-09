@@ -4,8 +4,20 @@ import com.sportsmanager.core.ICoach;
 import com.sportsmanager.core.IPlayer;
 
 import java.util.List;
+import java.util.Random;
 
 public class FootballCoach implements ICoach {
+
+    private static final String[] COACH_FIRST = {
+        "Vincenzo", "Carlo", "Pep", "Jürgen", "Diego", "Jorge",
+        "Fatih", "Hamza", "Volkan", "Okan", "Ersun", "Hüseyin",
+        "Roberto", "Rafael", "Maurizio", "Thomas", "Julian"
+    };
+    private static final String[] COACH_LAST = {
+        "Terim", "Hamzaoğlu", "Kahraman", "Buruk", "Yanal", "Güneş",
+        "Italiano", "Ancelotti", "Allegri", "Conte", "Guardiola",
+        "Klopp", "Mourinho", "Simeone", "Emery", "Tuchel", "Nagelsmann"
+    };
 
     private String name;
     private String specialty;
@@ -14,7 +26,13 @@ public class FootballCoach implements ICoach {
     public FootballCoach(String name, String specialty) {
         this.name = name;
         this.specialty = specialty;
-        this.quality = (Math.abs(name.hashCode()) % 10) + 1; // 1-10 arası
+        this.quality = new Random().nextInt(10) + 1; // 1-10 rastgele
+    }
+
+    public static String randomCoachName() {
+        Random r = new Random();
+        return COACH_FIRST[r.nextInt(COACH_FIRST.length)] + " " +
+               COACH_LAST[r.nextInt(COACH_LAST.length)];
     }
 
     @Override

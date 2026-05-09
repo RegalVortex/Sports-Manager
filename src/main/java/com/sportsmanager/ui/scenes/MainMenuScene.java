@@ -1,8 +1,11 @@
 package com.sportsmanager.ui.scenes;
 
 import com.sportsmanager.ui.SceneManager;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
@@ -10,6 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 
 public class MainMenuScene {
 
@@ -47,6 +51,8 @@ public class MainMenuScene {
                 SceneManager.getInstance().navigateTo("sportselect")
         );
 
+        loadGameBtn.setOnMouseClicked(e -> showComingSoon(root, loadGameBtn));
+
         exitBtn.setOnMouseClicked(e ->
                 javafx.application.Platform.exit()
         );
@@ -66,6 +72,34 @@ public class MainMenuScene {
         StackPane.setAlignment(root, Pos.CENTER);
 
         return new Scene(outer, 480, 850);
+    }
+
+    // ── Geçici "Yakında" bildirimi ─────────────────────────────────────────────
+    private static void showComingSoon(VBox root, Node anchor) {
+        // Zaten gösteriliyorsa ikinci kez ekleme
+        if (root.getChildren().stream().anyMatch(n -> "toast".equals(n.getUserData()))) return;
+
+        HBox toast = new HBox();
+        toast.setAlignment(Pos.CENTER);
+        toast.setPadding(new Insets(12, 20, 12, 20));
+        toast.setStyle("-fx-background-color: #252A3D; -fx-background-radius: 10;");
+        toast.setMaxWidth(380);
+        toast.setUserData("toast");
+
+        Label msg = new Label("💾  Bu özellik yakında geliyor!");
+        msg.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        msg.setTextFill(Color.web("#F0A500"));
+        toast.getChildren().add(msg);
+
+        // Butonun altına ekle
+        int anchorIndex = root.getChildren().indexOf(anchor.getParent());
+        int insertIndex = anchorIndex >= 0 ? anchorIndex + 1 : root.getChildren().size();
+        root.getChildren().add(insertIndex, toast);
+
+        // 2.5 saniye sonra kaldır
+        Timeline tl = new Timeline(new KeyFrame(Duration.seconds(2.5),
+                ev -> root.getChildren().remove(toast)));
+        tl.play();
     }
 
     private static HBox createMenuButton(String title, String subtitle, boolean highlighted) {

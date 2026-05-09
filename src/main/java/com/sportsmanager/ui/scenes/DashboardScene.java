@@ -187,6 +187,10 @@ public class DashboardScene {
 
         content.getChildren().add(createInfoCard(league, team));
         content.getChildren().add(createNextMatchCard(league, team));
+
+        VBox recentResults = createRecentResultsCard(league, team);
+        if (recentResults != null) content.getChildren().add(recentResults);
+
         content.getChildren().add(createStandingsSummary(league, team));
 
         Region pad = new Region(); pad.setPrefHeight(20);
@@ -396,6 +400,123 @@ public class DashboardScene {
                 sep.setStyle("-fx-background-color: #1A1F30;");
                 rowWrap.getChildren().add(sep);
             }
+            card.getChildren().add(rowWrap);
+        }
+        return card;
+    }
+
+    // ── Son maçlar kartı ──────────────────────────────────────────────────────
+    private static VBox createRecentResultsCard(ILeague league, ITeam team) {
+        if (league == null || team == null) return null;
+
+        // Oynanan maçları topla (sonucu olan)
+        List<IMatch> played = new java.util.ArrayList<>();
+        for (IMatch m : league.getAllFixtures()) {
+            if (m.getResult() != null &&
+                (m.getHomeTeam().equals(team) || m.getAwayTeam().equals(team))) {
+                played.add(m);
+            }
+        }
+        if (played.isEmpty()) return null;
+
+        // En son 5 maç
+        int from = Math.max(0, played.size() - 5);
+        List<IMatch> recent = played.subList(from, played.size());
+        // Kronolojik sıraya çevir (listedeki sıra zaten kronolojik)
+
+        VBox card = new VBox(0);
+        card.setStyle("-fx-background-color: " + CARD + "; -fx-background-radius: 10;");
+        card.setMaxWidth(Double.MAX_VALUE);
+
+        HBox hdr = new HBox();
+        hdr.setPadding(new Insets(14, 16, 10, 16));
+        hdr.setAlignment(Pos.CENTER_LEFT);
+        Label hdrLbl = new Label("SON MAÇLAR");
+        hdrLbl.setFont(Font.font("Arial", FontWeight.BOLD, 11));
+        hdrLbl.setTextFill(Color.web(SUBTEXT));
+        Region sp = new Region(); HBox.setHgrow(sp, Priority.ALWAYS);
+
+        // Form çizgisi (5 kutu W/D/L)
+        HBox formStrip = new HBox(5);
+        formStrip.setAlignment(Pos.CENTER);
+        for (IMatch m : recent) {
+            MatchResult r = m.getResult();
+            boolean isHome = m.getHomeTeam().equals(team);
+            int myScore  = isHome ? r.getHomeScore() : r.getAwayScore();
+            int oppScore = isHome ? r.getAwayScore() : r.getHomeScore();
+            String letter; String color;
+            if      (myScore > oppScore) { letter = "G"; color = GREEN; }
+            else if (myScore < oppScore) { letter = "M"; color = RED;   }
+            else                          { letter = "B"; color = "#FF9800"; }
+
+            StackPane box = new StackPane();
+            Rectangle bg = new Rectangle(22, 22);
+            bg.setArcWidth(4); bg.setArcHeight(4);
+            bg.setFill(Color.web(color + "33"));
+            Label lbl = new Label(letter);
+            lbl.setFont(Font.font("Arial", FontWeight.BOLD, 11));
+            lbl.setTextFill(Color.web(color));
+            box.getChildren().addAll(bg, lbl);
+            formStrip.getChildren().add(box);
+        }
+        hdr.getChildren().addAll(hdrLbl, sp, formStrip);
+        card.getChildren().add(hdr);
+
+        Region sep0 = new Region(); sep0.setPrefHeight(1);
+        sep0.setStyle("-fx-background-color: #2A3050;");
+        card.getChildren().add(sep0);
+
+        // Her maç satırı
+        for (int i = recent.size() - 1; i >= 0; i--) {
+            IMatch m = recent.get(i);
+            MatchResult r = m.getResult();
+            boolean isHome = m.getHomeTeam().equals(team);
+            int myScore  = isHome ? r.getHomeScore() : r.getAwayScore();
+            int oppScore = isHome ? r.getAwayScore()  : r.getHomeScore();
+            String oppName = isHome ? m.getAwayTeam().getName() : m.getHomeTeam().getName();
+
+            String result; String resColor;
+            if      (myScore > oppScore) { result = "G"; resColor = GREEN; }
+            else if (myScore < oppScore) { result = "M"; resColor = RED;   }
+            else                          { result = "B"; resColor = "#FF9800"; }
+
+            HBox row = new HBox(12);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.setPadding(new Insets(10, 16, 10, 16));
+
+            // G/M/B rozeti
+            StackPane badge = new StackPane();
+            Rectangle badgeBg = new Rectangle(26, 20);
+            badgeBg.setArcWidth(4); badgeBg.setArcHeight(4);
+            badgeBg.setFill(Color.web(resColor + "33"));
+            Label badgeLbl = new Label(result);
+            badgeLbl.setFont(Font.font("Arial", FontWeight.BOLD, 11));
+            badgeLbl.setTextFill(Color.web(resColor));
+            badge.getChildren().addAll(badgeBg, badgeLbl);
+
+            // Ev/Deplasman
+            Label venueLbl = new Label(isHome ? "İÇ" : "DEP");
+            venueLbl.setFont(Font.font("Arial", 10));
+            venueLbl.setTextFill(Color.web(isHome ? GREEN : SUBTEXT));
+            venueLbl.setPrefWidth(26);
+
+            // Rakip
+            Label oppLbl = new Label(oppName);
+            oppLbl.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+            oppLbl.setTextFill(Color.web(TEXT));
+            HBox.setHgrow(oppLbl, Priority.ALWAYS);
+
+            // Skor
+            Label scoreLbl = new Label(myScore + " - " + oppScore);
+            scoreLbl.setFont(Font.font("Arial", FontWeight.BOLD, 13));
+            scoreLbl.setTextFill(Color.web(myScore > oppScore ? GREEN : myScore < oppScore ? RED : SUBTEXT));
+
+            row.getChildren().addAll(badge, venueLbl, oppLbl, scoreLbl);
+
+            VBox rowWrap = new VBox(0, row);
+            Region sep = new Region(); sep.setPrefHeight(1);
+            sep.setStyle("-fx-background-color: #1A1F30;");
+            rowWrap.getChildren().add(sep);
             card.getChildren().add(rowWrap);
         }
         return card;

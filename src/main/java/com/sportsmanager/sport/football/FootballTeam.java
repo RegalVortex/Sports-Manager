@@ -38,23 +38,25 @@ public class FootballTeam extends AbstractTeam {
     public static FootballTeam generateRandom(String name, String logoPath) {
         FootballTeam team = new FootballTeam(name, logoPath);
 
-        team.addPlayerToSquad(FootballPlayer.generateRandom("GK", name + " GK"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("CB", name + " CB1"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("CB", name + " CB2"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("LB", name + " LB"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("RB", name + " RB"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("CM", name + " CM1"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("CM", name + " CM2"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("CAM", name + " CAM"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("LW", name + " LW"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("RW", name + " RW"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("ST", name + " ST"));
+        // İlk 11 (4-3-3 düzeni)
+        team.addPlayerToSquad(FootballPlayer.generateRandom("GK"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("CB"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("CB"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("LB"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("RB"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("CM"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("CM"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("CAM"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("LW"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("RW"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("ST"));
 
-        team.addPlayerToSquad(FootballPlayer.generateRandom("GK", name + " SUB GK"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("CB", name + " SUB CB"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("CM", name + " SUB CM"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("LW", name + " SUB LW"));
-        team.addPlayerToSquad(FootballPlayer.generateRandom("ST", name + " SUB ST"));
+        // Yedekler
+        team.addPlayerToSquad(FootballPlayer.generateRandom("GK"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("CB"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("CM"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("LW"));
+        team.addPlayerToSquad(FootballPlayer.generateRandom("ST"));
 
         List<IPlayer> firstEleven = new ArrayList<>();
         for (int i = 0; i < 11; i++) {
@@ -62,7 +64,11 @@ public class FootballTeam extends AbstractTeam {
         }
         team.setStartingLineup(firstEleven);
         team.setTactic(new FootballTactic("4-4-2"));
-        team.setCoach(new FootballCoach(name + " Coach", "ATTACKING"));
+
+        // Rastgele antrenör uzmanlığı
+        String[] specs = {"ATTACKING", "DEFENSIVE", "FITNESS"};
+        String spec = specs[new java.util.Random().nextInt(specs.length)];
+        team.setCoach(new FootballCoach(FootballCoach.randomCoachName(), spec));
 
         return team;
     }

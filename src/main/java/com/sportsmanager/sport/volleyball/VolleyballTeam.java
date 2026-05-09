@@ -42,23 +42,23 @@ public class VolleyballTeam extends AbstractTeam {
     public static VolleyballTeam generateRandom(String name, String logoPath) {
         VolleyballTeam team = new VolleyballTeam(name, logoPath);
 
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("SETTER", name + " Setter1"));
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("SETTER", name + " Setter2"));
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("SETTER"));        // 0
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("SETTER"));        // 1
 
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("MIDDLE_BLOCKER", name + " Middle1"));
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("MIDDLE_BLOCKER", name + " Middle2"));
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("MIDDLE_BLOCKER")); // 2
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("MIDDLE_BLOCKER")); // 3
 
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OUTSIDE_HITTER", name + " Outside1"));
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OUTSIDE_HITTER", name + " Outside2"));
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OUTSIDE_HITTER")); // 4
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OUTSIDE_HITTER")); // 5
 
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OPPOSITE", name + " Opposite1"));
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OPPOSITE", name + " Opposite2"));
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OPPOSITE"));       // 6
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OPPOSITE"));       // 7
 
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("LIBERO", name + " Libero1"));
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("LIBERO", name + " Libero2"));
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("LIBERO"));         // 8
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("LIBERO"));         // 9
 
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OUTSIDE_HITTER", name + " Reserve1"));
-        team.addPlayerToSquad(VolleyballPlayer.generateRandom("MIDDLE_BLOCKER", name + " Reserve2"));
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("OUTSIDE_HITTER")); // 10
+        team.addPlayerToSquad(VolleyballPlayer.generateRandom("MIDDLE_BLOCKER")); // 11
 
         List<IPlayer> firstSix = new ArrayList<>();
         firstSix.add(team.squad.get(0)); // Setter1
@@ -70,7 +70,11 @@ public class VolleyballTeam extends AbstractTeam {
 
         team.setStartingLineup(firstSix);
         team.setTactic(new VolleyballTactic("BALANCED"));
-        team.setCoach(new VolleyballCoach(name + " Coach", "OFFENSIVE"));
+
+        // Rastgele antrenör uzmanlığı
+        String[] specs = {"ATTACKING", "DEFENSIVE", "BALANCED"};
+        String spec = specs[new java.util.Random().nextInt(specs.length)];
+        team.setCoach(new VolleyballCoach(VolleyballCoach.randomCoachName(), spec));
 
         return team;
     }

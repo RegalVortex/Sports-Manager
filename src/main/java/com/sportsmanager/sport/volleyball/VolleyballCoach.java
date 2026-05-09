@@ -4,8 +4,20 @@ import com.sportsmanager.core.ICoach;
 import com.sportsmanager.core.IPlayer;
 
 import java.util.List;
+import java.util.Random;
 
 public class VolleyballCoach implements ICoach {
+
+    private static final String[] COACH_FIRST = {
+        "Daniele", "Giovanni", "Marco", "Roberto", "Hugo",
+        "Ferhat", "Mustafa", "Riza", "Nenad", "Zoran",
+        "Guidetti", "Baris", "Okan", "Serdar"
+    };
+    private static final String[] COACH_LAST = {
+        "Santarelli", "Guidetti", "Boscaglia", "Piazza", "Conte",
+        "Çağlayan", "Karabağ", "Yıldız", "Boskovic", "Petkovic",
+        "Üstündağ", "Yavuz", "Şen", "Koç"
+    };
 
     private final String name;
     private final String specialty;
@@ -14,7 +26,13 @@ public class VolleyballCoach implements ICoach {
     public VolleyballCoach(String name, String specialty) {
         this.name = name;
         this.specialty = specialty == null ? "BALANCED" : specialty.toUpperCase();
-        this.quality = (Math.abs(name.hashCode()) % 10) + 1;
+        this.quality = new Random().nextInt(10) + 1; // 1-10 rastgele
+    }
+
+    public static String randomCoachName() {
+        Random r = new Random();
+        return COACH_FIRST[r.nextInt(COACH_FIRST.length)] + " " +
+               COACH_LAST[r.nextInt(COACH_LAST.length)];
     }
 
     @Override

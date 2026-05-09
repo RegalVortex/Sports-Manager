@@ -3,6 +3,8 @@ package com.sportsmanager.ui.scenes;
 import com.sportsmanager.core.ICoach;
 import com.sportsmanager.core.IPlayer;
 import com.sportsmanager.core.ITeam;
+import com.sportsmanager.sport.football.FootballTactic;
+import com.sportsmanager.sport.volleyball.VolleyballTactic;
 import com.sportsmanager.ui.SceneManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,6 +19,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
 import java.util.List;
+import java.util.Map;
 
 public class SquadScene {
 
@@ -30,8 +33,9 @@ public class SquadScene {
     private static final String RED     = "#F44336";
     private static final int    MAX_W   = 600;
 
-    private static String activeTab = "SQUAD";
+    private static String activeTab = "KADRO";
 
+    // ── Ana sahne ────────────────────────────────────────────────────────────
     public static Scene create() {
         SceneManager sm = SceneManager.getInstance();
         ITeam team = sm.getCurrentPlayerTeam();
@@ -51,11 +55,12 @@ public class SquadScene {
         ScrollPane scroll = new ScrollPane();
         scroll.setFitToWidth(true);
         scroll.setMaxHeight(Double.MAX_VALUE);
-        scroll.setStyle("-fx-background: " + BG + "; -fx-background-color: " + BG + "; -fx-border-color: transparent;");
+        scroll.setStyle("-fx-background: " + BG + "; -fx-background-color: " + BG +
+                        "; -fx-border-color: transparent;");
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         VBox.setVgrow(scroll, Priority.ALWAYS);
 
-        if ("SQUAD".equals(activeTab)) {
+        if ("KADRO".equals(activeTab)) {
             scroll.setContent(createSquadContent(team));
         } else {
             scroll.setContent(createTacticsContent(team));
@@ -63,13 +68,13 @@ public class SquadScene {
 
         body.getChildren().add(scroll);
         content.setCenter(body);
-
         content.setMaxHeight(Double.MAX_VALUE);
         outer.getChildren().add(content);
 
         return new Scene(outer, 480, 850);
     }
 
+    // ── Üst bar ──────────────────────────────────────────────────────────────
     private static HBox createTopBar(ITeam team) {
         HBox bar = new HBox(12);
         bar.setAlignment(Pos.CENTER_LEFT);
@@ -81,11 +86,11 @@ public class SquadScene {
         back.setTextFill(Color.web(GOLD));
         back.setStyle("-fx-cursor: hand;");
         back.setOnMouseClicked(e -> {
-            activeTab = "SQUAD";
+            activeTab = "KADRO";
             SceneManager.getInstance().navigateTo("dashboard");
         });
 
-        Label title = new Label(team != null ? team.getName().toUpperCase() : "SQUAD");
+        Label title = new Label(team != null ? team.getName().toUpperCase() : "KADRO");
         title.setFont(Font.font("Arial", FontWeight.BOLD, 16));
         title.setTextFill(Color.web(TEXT));
 
@@ -107,12 +112,13 @@ public class SquadScene {
         return bar;
     }
 
+    // ── Alt sekme çubuğu ─────────────────────────────────────────────────────
     private static HBox createSubTabBar() {
         HBox bar = new HBox(0);
         bar.setStyle("-fx-background-color: " + CARD + ";");
         bar.setMaxWidth(Double.MAX_VALUE);
 
-        String[] tabs = {"SQUAD", "TACTICS"};
+        String[] tabs = {"KADRO", "TAKTİK"};
         for (String tab : tabs) {
             VBox cell = new VBox(0);
             cell.setAlignment(Pos.CENTER);
@@ -151,6 +157,7 @@ public class SquadScene {
         return outer;
     }
 
+    // ── Kadro içeriği ─────────────────────────────────────────────────────────
     private static VBox createSquadContent(ITeam team) {
         VBox vbox = new VBox(0);
         vbox.setStyle("-fx-background-color: " + BG + ";");
@@ -162,11 +169,11 @@ public class SquadScene {
         List<IPlayer> squad  = team.getSquad();
 
         if (!lineup.isEmpty()) {
-            vbox.getChildren().add(sectionHeader("STARTING LINEUP (" + lineup.size() + ")"));
+            vbox.getChildren().add(sectionHeader("İLK 11  (" + lineup.size() + " oyuncu)"));
             for (IPlayer p : lineup) vbox.getChildren().add(createPlayerCard(p, true));
         }
 
-        vbox.getChildren().add(sectionHeader("BENCH"));
+        vbox.getChildren().add(sectionHeader("YEDEKLER"));
         boolean hasBench = false;
         for (IPlayer p : squad) {
             if (!lineup.contains(p)) {
@@ -187,6 +194,7 @@ public class SquadScene {
         return vbox;
     }
 
+    // ── Antrenör kartı ───────────────────────────────────────────────────────
     private static HBox createCoachCard(ICoach coach) {
         HBox card = new HBox(14);
         card.setAlignment(Pos.CENTER_LEFT);
@@ -209,7 +217,7 @@ public class SquadScene {
         Label roleLbl = new Label("ANTRENÖR");
         roleLbl.setFont(Font.font("Arial", 11));
         roleLbl.setTextFill(Color.web(SUBTEXT));
-        String spec = coach.getSpecialty() != null ? coach.getSpecialty() : "BALANCED";
+        String spec = coach.getSpecialty() != null ? specialtyTr(coach.getSpecialty()) : "DENGELI";
         Label specLbl = new Label(spec);
         specLbl.setFont(Font.font("Arial", FontWeight.BOLD, 11));
         specLbl.setTextFill(Color.web(GOLD));
@@ -243,6 +251,7 @@ public class SquadScene {
         return outer;
     }
 
+    // ── Bölüm başlığı ────────────────────────────────────────────────────────
     private static HBox sectionHeader(String text) {
         HBox h = new HBox();
         h.setAlignment(Pos.CENTER_LEFT);
@@ -255,14 +264,16 @@ public class SquadScene {
         return h;
     }
 
+    // ── Oyuncu kartı (nitelik çubukları dahil) ───────────────────────────────
     private static HBox createPlayerCard(IPlayer p, boolean isStarter) {
         HBox card = new HBox(12);
         card.setAlignment(Pos.CENTER_LEFT);
         card.setStyle("-fx-background-color: " + (isStarter ? CARD : BG) + ";");
-        card.setPadding(new Insets(12, 16, 12, 16));
+        card.setPadding(new Insets(10, 16, 10, 16));
 
+        // Pozisyon rozeti
         StackPane posBadge = new StackPane();
-        Rectangle rect = new Rectangle(38, 28);
+        Rectangle rect = new Rectangle(40, 28);
         rect.setArcWidth(6); rect.setArcHeight(6);
         rect.setFill(Color.web(posColor(p.getPosition())));
         Label posLbl = new Label(shortPos(p.getPosition()));
@@ -270,6 +281,7 @@ public class SquadScene {
         posLbl.setTextFill(Color.WHITE);
         posBadge.getChildren().addAll(rect, posLbl);
 
+        // İsim + meta + nitelik çubukları
         VBox info = new VBox(3);
         Label nameLbl = new Label(p.getName());
         nameLbl.setFont(Font.font("Arial", FontWeight.BOLD, 13));
@@ -297,16 +309,21 @@ public class SquadScene {
             formLbl.setTextFill(Color.web(formColor(form)));
             meta.getChildren().addAll(ageLbl, dot, formLbl);
         }
-        info.getChildren().addAll(nameLbl, meta);
+
+        // Nitelik mini-çubukları
+        HBox attrBars = buildAttrBars(p);
+
+        info.getChildren().addAll(nameLbl, meta, attrBars);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        // OVR + Potansiyel
         VBox ovrBox = new VBox(2);
         ovrBox.setAlignment(Pos.CENTER_RIGHT);
         int ovr = p.getOverallRating();
         Label ovrVal = new Label(String.valueOf(ovr));
-        ovrVal.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        ovrVal.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         ovrVal.setTextFill(Color.web(ovrColor(ovr)));
         Label potLbl = new Label("↑" + p.getPotential());
         potLbl.setFont(Font.font("Arial", 10));
@@ -324,51 +341,242 @@ public class SquadScene {
         return outer;
     }
 
+    // ── Nitelik mini-çubukları ────────────────────────────────────────────────
+    private static HBox buildAttrBars(IPlayer p) {
+        HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(2, 0, 0, 0));
+
+        Map<String, Integer> attrs = p.getAttributes();
+        if (attrs == null || attrs.isEmpty()) return row;
+
+        String[] keys = topAttrKeys(p.getPosition(), attrs);
+        for (String key : keys) {
+            int val = attrs.getOrDefault(key, 50);
+            row.getChildren().add(miniBar(key, val));
+        }
+        return row;
+    }
+
+    private static HBox miniBar(String key, int val) {
+        HBox bar = new HBox(4);
+        bar.setAlignment(Pos.CENTER_LEFT);
+
+        Label keyLbl = new Label(key.substring(0, Math.min(3, key.length())).toUpperCase());
+        keyLbl.setFont(Font.font("Arial", 9));
+        keyLbl.setTextFill(Color.web(SUBTEXT));
+        keyLbl.setPrefWidth(26);
+
+        // Çubuk arka plan
+        StackPane barPane = new StackPane();
+        barPane.setAlignment(Pos.CENTER_LEFT);
+
+        Rectangle bg = new Rectangle(52, 5);
+        bg.setArcWidth(3); bg.setArcHeight(3);
+        bg.setFill(Color.web("#2A3050"));
+
+        Rectangle fill = new Rectangle(Math.max(2, (int)(52 * val / 99.0)), 5);
+        fill.setArcWidth(3); fill.setArcHeight(3);
+        fill.setFill(Color.web(barColor(val)));
+        StackPane.setAlignment(fill, Pos.CENTER_LEFT);
+
+        barPane.getChildren().addAll(bg, fill);
+
+        Label valLbl = new Label(String.valueOf(val));
+        valLbl.setFont(Font.font("Arial", FontWeight.BOLD, 9));
+        valLbl.setTextFill(Color.web(barColor(val)));
+        valLbl.setPrefWidth(20);
+
+        bar.getChildren().addAll(keyLbl, barPane, valLbl);
+        return bar;
+    }
+
+    private static String[] topAttrKeys(String pos, Map<String, Integer> attrs) {
+        // Pozisyona göre en önemli 3 niteliği döndür
+        if (pos == null) return attrs.keySet().stream().limit(3).toArray(String[]::new);
+        switch (pos.toUpperCase()) {
+            case "GK":  return new String[]{"defending", "heading", "stamina"};
+            case "CB":  return new String[]{"defending", "heading", "pace"};
+            case "LB": case "RB": return new String[]{"pace", "defending", "passing"};
+            case "CDM": case "CM": return new String[]{"passing", "defending", "stamina"};
+            case "CAM": return new String[]{"passing", "shooting", "pace"};
+            case "LW": case "RW": return new String[]{"pace", "shooting", "passing"};
+            case "ST": case "CF": return new String[]{"shooting", "heading", "pace"};
+            // Voleybol
+            case "SETTER": return new String[]{"set", "receive", "stamina"};
+            case "LIBERO": return new String[]{"receive", "stamina", "serve"};
+            case "MIDDLE_BLOCKER": return new String[]{"block", "spike", "stamina"};
+            case "OUTSIDE_HITTER": return new String[]{"spike", "receive", "serve"};
+            case "OPPOSITE": return new String[]{"spike", "serve", "block"};
+            default:
+                return attrs.keySet().stream().limit(3).toArray(String[]::new);
+        }
+    }
+
+    private static String barColor(int v) {
+        if (v >= 80) return GOLD;
+        if (v >= 68) return GREEN;
+        if (v >= 55) return "#2196F3";
+        return SUBTEXT;
+    }
+
+    // ── Taktik içeriği ───────────────────────────────────────────────────────
     private static VBox createTacticsContent(ITeam team) {
         VBox vbox = new VBox(14);
         vbox.setStyle("-fx-background-color: " + BG + ";");
         vbox.setPadding(new Insets(16));
         if (team == null) return vbox;
 
-        VBox formCard = new VBox(12);
+        String currentTactic = team.getTactic() != null ? team.getTactic().getName() : "";
+        String sport = SceneManager.getInstance().getSelectedSport();
+        boolean isFootball = sport == null || !sport.equalsIgnoreCase("volleyball");
+
+        // Formasyon seçimi
+        VBox formCard = new VBox(10);
         formCard.setStyle("-fx-background-color: " + CARD + "; -fx-background-radius: 10;");
         formCard.setPadding(new Insets(16));
-        Label formTitle = new Label("FORMASYON");
+
+        Label formTitle = new Label(isFootball ? "FORMASYON SEÇ" : "TAKTİK SEÇ");
         formTitle.setFont(Font.font("Arial", FontWeight.BOLD, 12));
         formTitle.setTextFill(Color.web(SUBTEXT));
-        String sport = SceneManager.getInstance().getSelectedSport();
-        String formation = (sport != null && sport.equalsIgnoreCase("volleyball")) ? "6-2 Rotasyon" : "4-3-3";
-        Label formVal = new Label(formation);
-        formVal.setFont(Font.font("Arial", FontWeight.BOLD, 28));
-        formVal.setTextFill(Color.web(GOLD));
-        Label formSub = new Label("Dengeli yaklaşım — atak ve savunma eşit.");
-        formSub.setFont(Font.font("Arial", 12));
-        formSub.setTextFill(Color.web(SUBTEXT));
-        formSub.setWrapText(true);
-        formCard.getChildren().addAll(formTitle, formVal, formSub);
+        formCard.getChildren().add(formTitle);
 
-        VBox trainCard = new VBox(12);
-        trainCard.setStyle("-fx-background-color: " + CARD + "; -fx-background-radius: 10;");
-        trainCard.setPadding(new Insets(16));
-        Label trainTitle = new Label("ANTRENMAN ODAĞI");
-        trainTitle.setFont(Font.font("Arial", FontWeight.BOLD, 12));
-        trainTitle.setTextFill(Color.web(SUBTEXT));
-        String spec = team.getCoach() != null ? team.getCoach().getSpecialty() : "BALANCED";
-        Label trainVal = new Label(spec);
-        trainVal.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-        trainVal.setTextFill(Color.web(TEXT));
-        Label trainSub = new Label("Antrenörün uzmanlığına göre belirlenir.");
-        trainSub.setFont(Font.font("Arial", 11));
-        trainSub.setTextFill(Color.web(SUBTEXT));
-        trainSub.setWrapText(true);
-        trainCard.getChildren().addAll(trainTitle, trainVal, trainSub);
+        if (isFootball) {
+            Object[][] options = {
+                {"4-4-2", "Dengeli — klasik dört-dört-iki düzeni"},
+                {"4-3-3", "Saldırı ağırlıklı — üçlü hücum hattı"},
+                {"5-3-2", "Savunma ağırlıklı — beşli savunma hattı"}
+            };
+            for (Object[] opt : options) {
+                final String tName = (String) opt[0];
+                final String tDesc = (String) opt[1];
+                boolean active = tName.equals(currentTactic);
+                HBox row = createTacticOption(tName, tDesc, active, () -> {
+                    team.setTactic(new FootballTactic(tName));
+                    SceneManager.getInstance().navigateTo("squad");
+                });
+                formCard.getChildren().add(row);
+            }
+        } else {
+            Object[][] options = {
+                {"OFFENSIVE", "Saldırı ağırlıklı — güçlü servis ve smaç"},
+                {"BALANCED",  "Dengeli — genel dengeli yaklaşım"},
+                {"DEFENSIVE", "Savunma ağırlıklı — güçlü blok ve ribaund"}
+            };
+            for (Object[] opt : options) {
+                final String tName = (String) opt[0];
+                final String tDesc = (String) opt[1];
+                boolean active = tName.equalsIgnoreCase(currentTactic);
+                HBox row = createTacticOption(tName, tDesc, active, () -> {
+                    team.setTactic(new VolleyballTactic(tName));
+                    SceneManager.getInstance().navigateTo("squad");
+                });
+                formCard.getChildren().add(row);
+            }
+        }
+        vbox.getChildren().add(formCard);
 
-        vbox.getChildren().addAll(formCard, trainCard);
+        // Mevcut taktik özeti
+        VBox summaryCard = new VBox(10);
+        summaryCard.setStyle("-fx-background-color: " + CARD + "; -fx-background-radius: 10;");
+        summaryCard.setPadding(new Insets(16));
+        Label sumTitle = new Label("AKTİF TAKTİK");
+        sumTitle.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        sumTitle.setTextFill(Color.web(SUBTEXT));
+        Label sumVal = new Label(currentTactic.isEmpty() ? "—" : currentTactic);
+        sumVal.setFont(Font.font("Arial", FontWeight.BOLD, 26));
+        sumVal.setTextFill(Color.web(GOLD));
+
+        double atk = team.getTactic() != null ? team.getTactic().getAttackModifier() : 1.0;
+        double def = team.getTactic() != null ? team.getTactic().getDefenseModifier() : 1.0;
+
+        HBox modsRow = new HBox(16);
+        modsRow.setAlignment(Pos.CENTER_LEFT);
+        modsRow.getChildren().addAll(
+            modChip("⚔ Atak", atk),
+            modChip("🛡 Savunma", def)
+        );
+        summaryCard.getChildren().addAll(sumTitle, sumVal, modsRow);
+        vbox.getChildren().add(summaryCard);
+
+        // Antrenman odağı
+        if (team.getCoach() != null) {
+            VBox trainCard = new VBox(8);
+            trainCard.setStyle("-fx-background-color: " + CARD + "; -fx-background-radius: 10;");
+            trainCard.setPadding(new Insets(16));
+            Label trainTitle = new Label("ANTRENMAN ODAĞI");
+            trainTitle.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+            trainTitle.setTextFill(Color.web(SUBTEXT));
+            String spec = team.getCoach().getSpecialty() != null
+                    ? specialtyTr(team.getCoach().getSpecialty()) : "DENGELI";
+            Label trainVal = new Label(spec);
+            trainVal.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+            trainVal.setTextFill(Color.web(TEXT));
+            Label trainSub = new Label("Antrenörünüzün uzmanlığına göre oyuncular her hafta gelişir.");
+            trainSub.setFont(Font.font("Arial", 11));
+            trainSub.setTextFill(Color.web(SUBTEXT));
+            trainSub.setWrapText(true);
+            trainCard.getChildren().addAll(trainTitle, trainVal, trainSub);
+            vbox.getChildren().add(trainCard);
+        }
+
         Region pad = new Region(); pad.setPrefHeight(30);
         vbox.getChildren().add(pad);
         return vbox;
     }
 
+    private static HBox createTacticOption(String name, String desc, boolean active, Runnable onSelect) {
+        HBox row = new HBox(12);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setPadding(new Insets(12, 14, 12, 14));
+        row.setStyle("-fx-background-color: " + (active ? "#1A2040" : CARD2) +
+                     "; -fx-background-radius: 8; -fx-cursor: hand;");
+
+        Label checkLbl = new Label(active ? "✓" : "○");
+        checkLbl.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        checkLbl.setTextFill(Color.web(active ? GOLD : SUBTEXT));
+        checkLbl.setPrefWidth(22);
+
+        VBox info = new VBox(3);
+        Label nameLbl = new Label(name);
+        nameLbl.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        nameLbl.setTextFill(Color.web(active ? GOLD : TEXT));
+        Label descLbl = new Label(desc);
+        descLbl.setFont(Font.font("Arial", 11));
+        descLbl.setTextFill(Color.web(SUBTEXT));
+        descLbl.setWrapText(true);
+        info.getChildren().addAll(nameLbl, descLbl);
+
+        row.getChildren().addAll(checkLbl, info);
+        row.setOnMouseClicked(e -> onSelect.run());
+        row.setOnMouseEntered(e -> {
+            if (!active) row.setStyle("-fx-background-color: #252B3D; -fx-background-radius: 8; -fx-cursor: hand;");
+        });
+        row.setOnMouseExited(e -> {
+            row.setStyle("-fx-background-color: " + (active ? "#1A2040" : CARD2) +
+                         "; -fx-background-radius: 8; -fx-cursor: hand;");
+        });
+        return row;
+    }
+
+    private static HBox modChip(String label, double mod) {
+        HBox chip = new HBox(6);
+        chip.setAlignment(Pos.CENTER_LEFT);
+        chip.setPadding(new Insets(6, 12, 6, 12));
+        String col = mod > 1.0 ? GREEN : mod < 1.0 ? RED : SUBTEXT;
+        chip.setStyle("-fx-background-color: " + col + "22; -fx-background-radius: 6;");
+        Label lbl = new Label(label);
+        lbl.setFont(Font.font("Arial", 12));
+        lbl.setTextFill(Color.web(col));
+        String sign = mod > 1.0 ? "+" : mod < 1.0 ? "−" : "=";
+        Label valLbl = new Label(sign + Math.round(Math.abs(mod - 1.0) * 100) + "%");
+        valLbl.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        valLbl.setTextFill(Color.web(col));
+        chip.getChildren().addAll(lbl, valLbl);
+        return chip;
+    }
+
+    // ── Yardımcı metodlar ────────────────────────────────────────────────────
     private static String posColor(String pos) {
         if (pos == null) return "#607D8B";
         switch (pos.toUpperCase()) {
@@ -376,17 +584,32 @@ public class SquadScene {
             case "CB": case "LB": case "RB": case "DEF": return "#1565C0";
             case "CDM": case "CM": case "CAM": case "MID": return "#2E7D32";
             case "LW": case "RW": case "ST": case "CF": case "FWD": return "#C62828";
-            case "MB": case "OH": case "S": case "L": case "LS": case "RS": return "#E65100";
+            case "MIDDLE_BLOCKER": return "#7B1FA2";
+            case "OUTSIDE_HITTER": return "#C62828";
+            case "SETTER": return "#2E7D32";
+            case "OPPOSITE": return "#E65100";
+            case "LIBERO": return "#00838F";
             default: return "#607D8B";
         }
     }
+
     private static String shortPos(String pos) {
         if (pos == null) return "?";
-        return pos.length() <= 3 ? pos.toUpperCase() : pos.substring(0, 3).toUpperCase();
+        switch (pos.toUpperCase()) {
+            case "MIDDLE_BLOCKER":  return "MB";
+            case "OUTSIDE_HITTER":  return "OH";
+            case "SETTER":          return "SET";
+            case "OPPOSITE":        return "OPP";
+            case "LIBERO":          return "LIB";
+            default:
+                return pos.length() <= 3 ? pos.toUpperCase() : pos.substring(0, 3).toUpperCase();
+        }
     }
+
     private static String ovrColor(int o) {
         return o >= 80 ? GOLD : o >= 70 ? GREEN : o >= 60 ? "#2196F3" : SUBTEXT;
     }
+
     private static String formColor(int f) {
         switch (f) {
             case 3: return GOLD;
@@ -395,12 +618,23 @@ public class SquadScene {
             default: return RED;
         }
     }
+
     private static String formText(int f) {
         switch (f) {
             case 3: return "Mükemmel";
             case 2: return "İyi";
             case 1: return "Normal";
             default: return "Kötü";
+        }
+    }
+
+    private static String specialtyTr(String spec) {
+        if (spec == null) return "DENGELI";
+        switch (spec.toUpperCase()) {
+            case "ATTACKING": case "OFFENSIVE": return "SALDIRI";
+            case "DEFENSIVE": return "SAVUNMA";
+            case "FITNESS":   return "KONDISYON";
+            default:          return "DENGELI";
         }
     }
 }

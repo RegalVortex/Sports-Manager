@@ -81,12 +81,14 @@ public abstract class AbstractLeague implements ILeague {
             applyMatchResult(match);
         }
 
+        // Sakatlık azalt (haftada BİR kez)
         for (ITeam team : teams) {
             for (IPlayer player : team.getSquad()) {
                 player.decrementInjury();
             }
         }
 
+        // Oynayan oyuncuların maç sayısını artır
         for (ITeam team : teams) {
             for (IPlayer player : team.getStartingLineup()) {
                 if (!player.isInjured()) {
@@ -95,12 +97,7 @@ public abstract class AbstractLeague implements ILeague {
             }
         }
 
-        for (ITeam team : teams) {
-            for (IPlayer player : team.getSquad()) {
-                player.decrementInjury();
-            }
-        }
-
+        // Sakatları kadroda sağlıklı oyuncularla otomatik doldur
         for (ITeam team : teams) {
             if (team instanceof AbstractTeam) {
                 ((AbstractTeam) team).autoFixLineup();
