@@ -26,11 +26,11 @@ public class ConsoleRouter {
                 current = current.handleInput(input);
             } catch (Exception e) {
                 System.out.println();
-                ConsolePrinter.error("Something went wrong on this screen. You can try again or press Q to quit.");
+                ConsolePrinter.error("Bu ekranda beklenmeyen bir hata oldu. Tekrar deneyebilir veya Q ile cikabilirsin.");
                 ConsolePrinter.info(e.getClass().getSimpleName() + ": " + e.getMessage());
             }
         }
         System.out.println();
-        System.out.println("Thanks for playing Sports Manager. Goodbye.");
+        System.out.println("Sports Manager oynadigin icin tesekkurler. Gorusmek uzere.");
     }
 }

@@ -97,15 +97,15 @@ public class SetupScreen implements Screen {
     }
 
     private void renderMainMenu() {
-        HeaderRenderer.render("Sports Manager", "Console career mode");
-        HeaderRenderer.section("Manager Office");
-        PanelRenderer.note("Career Command Center",
-            "Create a new club story, restore a saved career, or exit when you are done.");
-        HeaderRenderer.section("Start");
+        HeaderRenderer.render("Sports Manager", "Konsol kariyer modu");
+        HeaderRenderer.section("Menajer Ofisi");
+        PanelRenderer.note("Kariyer Komuta Merkezi",
+            "Yeni kariyer kur, kayitli oyunu yukle veya cikis yap.");
+        HeaderRenderer.section("Baslangic");
         PanelRenderer.actionGrid(List.of(
-            "New Career",
-            "Load Career",
-            "Quit"
+            "Yeni Kariyer",
+            "Kariyer Yukle",
+            "Cikis"
         ));
     }
 
@@ -122,14 +122,18 @@ public class SetupScreen implements Screen {
             case 0:
                 return null;
             default:
-                message = "Invalid choice. Please enter 1, 2, 3, H, or Q.";
+                message = "Gecersiz secim. 1, 2, 3, H veya Q gir.";
                 return this;
         }
     }
 
     private void renderSportSelect() {
-        HeaderRenderer.render("New Career", "Step 1/3 - choose sport");
-        MenuRenderer.render(availableSports(), true);
+        HeaderRenderer.render("Yeni Kariyer", "Adim 1/3 - spor sec");
+        List<String> options = new ArrayList<>();
+        for (String sport : availableSports()) {
+            options.add(UiStats.sportLabel(sport));
+        }
+        MenuRenderer.render(options, true);
     }
 
     private Screen handleSportSelect(String input) {
@@ -143,16 +147,16 @@ public class SetupScreen implements Screen {
             selectedSport = sports.get(choice - 1);
             phase = 2;
         } else {
-            message = "Invalid sport. Choose a listed number.";
+            message = "Gecersiz spor. Listedeki numaralardan birini sec.";
         }
         return this;
     }
 
     private void renderLeagueSelect() {
-        HeaderRenderer.render("New Career", "Step 2/3 - choose league | Sport: " + selectedSport);
+        HeaderRenderer.render("Yeni Kariyer", "Adim 2/3 - lig sec | Spor: " + UiStats.sportLabel(selectedSport));
         List<String> options = new ArrayList<>();
         for (LeaguePreset preset : PresetData.getLeaguesForSport(selectedSport)) {
-            options.add(preset.getLeagueName() + " (" + preset.getTeamNames().size() + " teams)");
+            options.add(preset.getLeagueName() + " (" + preset.getTeamNames().size() + " takim)");
         }
         MenuRenderer.render(options, true);
     }
@@ -168,13 +172,13 @@ public class SetupScreen implements Screen {
             selectedLeague = leagues.get(choice - 1);
             phase = 3;
         } else {
-            message = "Invalid league. Choose a listed number.";
+            message = "Gecersiz lig. Listedeki numaralardan birini sec.";
         }
         return this;
     }
 
     private void renderTeamSelect() {
-        HeaderRenderer.render("New Career", "Step 3/3 - choose club | " + selectedLeague.getLeagueName());
+        HeaderRenderer.render("Yeni Kariyer", "Adim 3/3 - takim sec | " + selectedLeague.getLeagueName());
         MenuRenderer.render(new ArrayList<>(selectedLeague.getTeamNames()), true);
     }
 
@@ -186,7 +190,7 @@ public class SetupScreen implements Screen {
         List<String> teams = selectedLeague.getTeamNames();
         int choice = ConsoleInput.parseChoice(input);
         if (!ConsoleInput.inRange(choice, 1, teams.size())) {
-            message = "Invalid team. Choose a listed number.";
+            message = "Gecersiz takim. Listedeki numaralardan birini sec.";
             return this;
         }
 
@@ -194,21 +198,21 @@ public class SetupScreen implements Screen {
             GameSetupService.SetupResult result =
                 setupService.createGame(selectedSport, selectedLeague, teams.get(choice - 1));
             applyGame(result.getSport(), result.getLeague(), result.getPlayerTeam(), registry.getFactory(selectedSport));
-            MainDashboardScreen dashboard = new MainDashboardScreen();
-            dashboard.setMessage("Career started with " + result.getPlayerTeam().getName() + ".");
+            MainDashboardScreen dashboard = new MainDashboardScreen(registry);
+            dashboard.setMessage(result.getPlayerTeam().getName() + " ile kariyer basladi.");
             return dashboard;
         } catch (Exception e) {
-            message = "Setup failed: " + e.getMessage();
+            message = "Kurulum basarisiz: " + e.getMessage();
             return this;
         }
     }
 
     private void renderLoadSelect() {
-        HeaderRenderer.render("Load Career", "Choose a save slot");
+        HeaderRenderer.render("Kariyer Yukle", "Kayit slotu sec");
         List<String> options = new ArrayList<>();
         for (int i = 0; i < SLOT_FILES.length; i++) {
-            File file = new File(SLOT_FILES[i]);
-            options.add("Slot " + (i + 1) + " - " + (file.exists() ? "Saved" : "Empty"));
+            File file = SaveLoadService.resolveSaveFile(SLOT_FILES[i]);
+            options.add("Slot " + (i + 1) + " - " + (file.exists() ? "Kayitli" : "Bos"));
         }
         MenuRenderer.render(options, true);
     }
@@ -220,20 +224,20 @@ public class SetupScreen implements Screen {
         }
         int choice = ConsoleInput.parseChoice(input);
         if (!ConsoleInput.inRange(choice, 1, SLOT_FILES.length)) {
-            message = "Invalid slot. Choose 1-" + SLOT_FILES.length + " or 0.";
+            message = "Gecersiz slot. 1-" + SLOT_FILES.length + " veya 0 sec.";
             return this;
         }
 
         LoadedGame loaded = SaveLoadService.loadGame(SLOT_FILES[choice - 1], registry);
         if (loaded == null) {
-            message = "That slot is empty or cannot be loaded.";
+            message = "Bu slot bos veya yuklenemiyor.";
             return this;
         }
 
         String sportName = loaded.getSport().getSportName().toLowerCase();
         applyGame(loaded.getSport(), loaded.getLeague(), loaded.getPlayerTeam(), registry.getFactory(sportName));
-        MainDashboardScreen dashboard = new MainDashboardScreen();
-        dashboard.setMessage("Loaded Slot " + choice + ".");
+        MainDashboardScreen dashboard = new MainDashboardScreen(registry);
+        dashboard.setMessage("Slot " + choice + " yuklendi.");
         return dashboard;
     }
 
@@ -253,10 +257,10 @@ public class SetupScreen implements Screen {
 
     private void showHelp() {
         ConsolePrinter.blank();
-        ConsolePrinter.line("  Help");
-        ConsolePrinter.line("  New Career creates a clean season from preset teams.");
-        ConsolePrinter.line("  Load Career restores one of the three local save slots.");
-        ConsolePrinter.line("  Use 0 to go back, H for help, and Q to quit.");
+        ConsolePrinter.line("  Yardim");
+        ConsolePrinter.line("  Yeni Kariyer hazir takimlardan temiz bir sezon olusturur.");
+        ConsolePrinter.line("  Kariyer Yukle uc yerel kayit slotundan birini geri getirir.");
+        ConsolePrinter.line("  0 geri doner, H yardim acar, Q cikis yapar.");
         ConsolePrinter.blank();
     }
 }

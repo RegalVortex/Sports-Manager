@@ -4,6 +4,7 @@ import com.sportsmanager.core.ICoach;
 import com.sportsmanager.core.IPlayer;
 import com.sportsmanager.core.ITactic;
 import com.sportsmanager.core.ITeam;
+import com.sportsmanager.core.LineupWarnings;
 import com.sportsmanager.sport.football.FootballSportFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,6 +77,11 @@ class LineupWarningsTest {
         @Override public void setCoach(ICoach c)        {}
         @Override public void resetPoints()             {}
         @Override public int getTeamOverallRating()     { return 70; }
+        @Override public int getExpectedLineupSize()    { return teamHasGk() ? 11 : 6; }
+
+        private boolean teamHasGk() {
+            return squad.stream().anyMatch(player -> "GK".equalsIgnoreCase(player.getPosition()));
+        }
     }
 
     // ── Tests ─────────────────────────────────────────────────────
@@ -85,7 +91,7 @@ class LineupWarningsTest {
         StubTeam team = new StubTeam();
         List<String> warnings = LineupWarnings.check(team);
         assertEquals(1, warnings.size());
-        assertTrue(warnings.get(0).toLowerCase().contains("empty"));
+        assertTrue(warnings.get(0).toLowerCase().contains("bos"));
     }
 
     @Test
@@ -144,7 +150,7 @@ class LineupWarningsTest {
         }
 
         List<String> warnings = LineupWarnings.check(team);
-        assertTrue(warnings.stream().anyMatch(w -> w.toLowerCase().contains("goalkeeper")),
+        assertTrue(warnings.stream().anyMatch(w -> w.toLowerCase().contains("kaleci")),
             "Expected goalkeeper warning");
     }
 
@@ -179,7 +185,7 @@ class LineupWarningsTest {
 
         List<String> warnings = LineupWarnings.check(team);
         // No GK warning since no player in squad has position GK
-        assertFalse(warnings.stream().anyMatch(w -> w.toLowerCase().contains("goalkeeper")),
+        assertFalse(warnings.stream().anyMatch(w -> w.toLowerCase().contains("kaleci")),
             "Should not warn about GK for a sport that doesn't use GK");
     }
 
@@ -195,5 +201,15 @@ class LineupWarningsTest {
         FootballSportFactory factory = new FootballSportFactory();
         ITeam team = factory.createTeam("Test FC", "test.png");
         assertTrue(LineupWarnings.teamHasGkPlayer(team));
+    }
+
+    @Test
+    void volleyballLineupSizeDoesNotDependOnSquadSize() {
+        StubTeam team = new StubTeam();
+        for (int i = 0; i < 20; i++) {
+            team.addToSquad(new StubPlayer("Volley " + i, "OUTSIDE_HITTER"));
+        }
+
+        assertEquals(6, LineupWarnings.expectedLineupSize(team));
     }
 }

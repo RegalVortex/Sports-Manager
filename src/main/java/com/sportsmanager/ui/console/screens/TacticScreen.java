@@ -32,13 +32,13 @@ public class TacticScreen implements Screen {
     public void render() {
         ITeam team = GameContext.getInstance().getPlayerTeam();
         if (team == null) {
-            ConsolePrinter.error("No active team.");
+            ConsolePrinter.error("Aktif takim yok.");
             ConsolePrinter.prompt();
             return;
         }
 
-        String current = team.getTactic() == null ? "None" : team.getTactic().getName();
-        HeaderRenderer.render("Tactics", team.getName() + " | Current: " + current);
+        String current = team.getTactic() == null ? "Yok" : team.getTactic().getName();
+        HeaderRenderer.render("Taktikler", team.getName() + " | Aktif: " + UiStats.tacticLabel(current));
         renderTactics(current);
 
         if (message != null) {
@@ -69,18 +69,18 @@ public class TacticScreen implements Screen {
         List<ITactic> tactics = factory.getAvailableTactics();
         int choice = ConsoleInput.parseChoice(input);
         if (!ConsoleInput.inRange(choice, 1, tactics.size())) {
-            message = "Invalid tactic. Choose a listed number.";
+            message = "Gecersiz taktik. Listedeki numaralardan birini sec.";
             return this;
         }
 
         ITactic selected = tactics.get(choice - 1);
         team.setTactic(selected);
-        message = "Tactic changed to " + selected.getName() + ".";
+        message = "Taktik " + UiStats.tacticLabel(selected.getName()) + " olarak degisti.";
         return this;
     }
 
     private void renderTactics(String current) {
-        String[] headers = {"#", "Tactic", "Attack", "Defence", "Status"};
+        String[] headers = {"#", "Taktik", "Hucum", "Defans", "Durum"};
         int[] widths = {3, 18, 8, 8, 10};
         List<String[]> rows = new ArrayList<>();
         List<ITactic> tactics = factory.getAvailableTactics();
@@ -89,10 +89,10 @@ public class TacticScreen implements Screen {
             ITactic tactic = tactics.get(i);
             rows.add(new String[]{
                 String.valueOf(i + 1),
-                tactic.getName(),
+                UiStats.tacticLabel(tactic.getName()),
                 String.format("%.2f", tactic.getAttackModifier()),
                 String.format("%.2f", tactic.getDefenseModifier()),
-                tactic.getName().equalsIgnoreCase(current) ? "Current" : ""
+                tactic.getName().equalsIgnoreCase(current) ? "Aktif" : ""
             });
         }
         ConsolePrinter.blank();
@@ -100,9 +100,10 @@ public class TacticScreen implements Screen {
     }
 
     private void showHelp() {
-        HeaderRenderer.section("Tactics Help");
-        ConsolePrinter.line("  Higher attack improves scoring chances, higher defence reduces opponent chances.");
-        ConsolePrinter.line("  Pick a tactic that fits your squad strength and next opponent.");
+        HeaderRenderer.section("Taktik Yardimi");
+        ConsolePrinter.line("  Yuksek hucum skor sansini artirir, yuksek defans rakip sansini azaltir.");
+        ConsolePrinter.line("  Kadro gucune ve siradaki rakibe uygun taktigi sec.");
         ConsolePrinter.blank();
     }
+
 }

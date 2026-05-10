@@ -6,6 +6,9 @@ import com.sportsmanager.core.IPlayer;
 import com.sportsmanager.core.ITeam;
 import com.sportsmanager.core.MatchResult;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Small read-only calculations shared by console screens.
  */
@@ -50,6 +53,26 @@ final class UiStats {
         return value;
     }
 
+    static Map<ITeam, int[]> goalTotals(ILeague league) {
+        Map<ITeam, int[]> totals = new HashMap<>();
+        for (ITeam team : league.getTeams()) {
+            totals.put(team, new int[]{0, 0});
+        }
+        for (IMatch match : league.getAllFixtures()) {
+            MatchResult result = match.getResult();
+            if (result == null) {
+                continue;
+            }
+            int[] home = totals.computeIfAbsent(result.getHomeTeam(), ignored -> new int[]{0, 0});
+            int[] away = totals.computeIfAbsent(result.getAwayTeam(), ignored -> new int[]{0, 0});
+            home[0] += result.getHomeScore();
+            home[1] += result.getAwayScore();
+            away[0] += result.getAwayScore();
+            away[1] += result.getHomeScore();
+        }
+        return totals;
+    }
+
     static int injuredCount(ITeam team) {
         int count = 0;
         for (IPlayer player : team.getSquad()) {
@@ -83,19 +106,26 @@ final class UiStats {
         return Math.max(0, Math.min(100, formScore + healthScore));
     }
 
-    static String ordinal(int n) {
-        if (n >= 11 && n <= 13) {
-            return "th";
+    static String sportLabel(String sport) {
+        if ("football".equalsIgnoreCase(sport)) {
+            return "Futbol";
         }
-        switch (n % 10) {
-            case 1:
-                return "st";
-            case 2:
-                return "nd";
-            case 3:
-                return "rd";
-            default:
-                return "th";
+        if ("volleyball".equalsIgnoreCase(sport)) {
+            return "Voleybol";
         }
+        return sport;
+    }
+
+    static String tacticLabel(String tactic) {
+        if ("OFFENSIVE".equalsIgnoreCase(tactic)) {
+            return "Hucum";
+        }
+        if ("BALANCED".equalsIgnoreCase(tactic)) {
+            return "Dengeli";
+        }
+        if ("DEFENSIVE".equalsIgnoreCase(tactic)) {
+            return "Defans";
+        }
+        return tactic;
     }
 }

@@ -5,6 +5,7 @@ import com.sportsmanager.core.ILeague;
 import com.sportsmanager.core.IMatch;
 import com.sportsmanager.core.IPlayer;
 import com.sportsmanager.core.ITeam;
+import com.sportsmanager.core.LineupWarnings;
 import com.sportsmanager.core.MatchResult;
 import com.sportsmanager.ui.console.ConsoleInput;
 import com.sportsmanager.ui.console.ConsolePrinter;
@@ -42,11 +43,11 @@ public class MatchScreen implements Screen {
         }
         ConsolePrinter.blank();
         if (phase == 0) {
-            ConsolePrinter.line("   1. Simulate Week");
-            ConsolePrinter.line("   0. Back    H. Help    Q. Quit");
+            ConsolePrinter.line("   1. Haftayi Simule Et");
+            ConsolePrinter.line("   0. Geri    H. Yardim    Q. Cikis");
             ConsolePrinter.prompt();
         } else {
-            ConsolePrinter.line("   0. Back to Dashboard    Q. Quit");
+            ConsolePrinter.line("   0. Panele Don    Q. Cikis");
             ConsolePrinter.prompt();
         }
     }
@@ -66,7 +67,7 @@ public class MatchScreen implements Screen {
             }
             int choice = ConsoleInput.parseChoice(input);
             if (choice != 1 && !input.isBlank()) {
-                ConsolePrinter.error("Invalid choice. Enter 1 to simulate, 0 to go back, or Q to quit.");
+                ConsolePrinter.error("Gecersiz secim. Simulasyon icin 1, geri icin 0 veya cikis icin Q gir.");
                 return this;
             }
             simulateWeek();
@@ -82,31 +83,31 @@ public class MatchScreen implements Screen {
         ITeam team = ctx.getPlayerTeam();
         int week = league.getCurrentWeek();
 
-        HeaderRenderer.render("Match Center", "Week " + week + " preview");
+        HeaderRenderer.render("Mac Merkezi", "Hafta " + week + " onizlemesi");
         playerMatch = findPlayerMatch(league, team, week);
 
         if (playerMatch == null) {
-            AlertRenderer.info("Your team has no fixture this week. Other matches will still be simulated.");
+            AlertRenderer.info("Takiminin bu hafta maci yok. Diger maclar yine simule edilecek.");
         } else {
             ITeam opponent = playerMatch.getHomeTeam().equals(team)
                 ? playerMatch.getAwayTeam() : playerMatch.getHomeTeam();
-            String venue = playerMatch.getHomeTeam().equals(team) ? "HOME" : "AWAY";
+            String venue = playerMatch.getHomeTeam().equals(team) ? "EV" : "DEPLASMAN";
             ConsolePrinter.blank();
-            ConsolePrinter.keyValue("Your Match", playerMatch.getHomeTeam().getName()
+            ConsolePrinter.keyValue("Macin", playerMatch.getHomeTeam().getName()
                 + " vs " + playerMatch.getAwayTeam().getName());
-            ConsolePrinter.keyValue("Venue", venue);
-            ConsolePrinter.keyValue("Team OVR", String.valueOf(team.getTeamOverallRating()));
-            ConsolePrinter.keyValue("Opponent OVR", String.valueOf(opponent.getTeamOverallRating()));
-            ConsolePrinter.keyValue("Tactic", team.getTactic() != null ? team.getTactic().getName() : "None");
+            ConsolePrinter.keyValue("Saha", venue);
+            ConsolePrinter.keyValue("Takim Gucu", String.valueOf(team.getTeamOverallRating()));
+            ConsolePrinter.keyValue("Rakip Gucu", String.valueOf(opponent.getTeamOverallRating()));
+        ConsolePrinter.keyValue("Taktik", team.getTactic() != null ? UiStats.tacticLabel(team.getTactic().getName()) : "Yok");
         }
 
         List<String> warnings = LineupWarnings.check(team);
         if (!warnings.isEmpty()) {
-            HeaderRenderer.section("Lineup Warnings");
+            HeaderRenderer.section("Kadro Uyarilari");
             AlertRenderer.warnAll(warnings);
         }
 
-        HeaderRenderer.section("All Fixtures");
+        HeaderRenderer.section("Tum Fikstur");
         for (IMatch match : league.getFixturesForWeek(week)) {
             ConsolePrinter.line("  " + match.getHomeTeam().getName()
                 + " vs " + match.getAwayTeam().getName());
@@ -119,43 +120,43 @@ public class MatchScreen implements Screen {
         ITeam team = ctx.getPlayerTeam();
         int playedWeek = Math.max(1, league.getCurrentWeek() - 1);
 
-        HeaderRenderer.render("Match Report", "Week " + playedWeek + " results");
+        HeaderRenderer.render("Mac Raporu", "Hafta " + playedWeek + " sonuclari");
 
         if (playerResult == null) {
-            AlertRenderer.info("Your team had no match this week.");
+            AlertRenderer.info("Takimin bu hafta mac yapmadi.");
         } else {
             ConsolePrinter.blank();
             ConsolePrinter.line("  " + playerResult);
             ITeam winner = playerResult.getWinner();
             if (winner == null) {
-                AlertRenderer.info("Draw. One point on the board.");
+                AlertRenderer.info("Beraberlik. Haneye bir puan yazildi.");
             } else if (winner.equals(team)) {
-                AlertRenderer.success("Victory. The dressing room will like that.");
+                AlertRenderer.success("Galibiyet. Soyunma odasi bunu sevecek.");
             } else {
-                AlertRenderer.warn("Defeat. Check lineup, form, and tactics before the next week.");
+                AlertRenderer.warn("Maglubiyet. Sonraki hafta oncesi kadro, form ve taktigi kontrol et.");
             }
         }
 
-        HeaderRenderer.section("Match Events");
+        HeaderRenderer.section("Mac Olaylari");
         if (commentary.isEmpty()) {
-            ConsolePrinter.line("  - No major events recorded.");
+            ConsolePrinter.line("  - Kayda deger olay yok.");
         } else {
             for (int i = 0; i < commentary.size(); i++) {
                 ConsolePrinter.line(String.format("  %02d' %s", eventMinute(i), commentary.get(i)));
             }
         }
 
-        HeaderRenderer.section("Player Highlights");
+        HeaderRenderer.section("Oyuncu Notlari");
         renderHighlights(team);
 
-        HeaderRenderer.section("All Results");
+        HeaderRenderer.section("Tum Sonuclar");
         for (IMatch match : league.getFixturesForWeek(playedWeek)) {
             if (match.getResult() != null) {
                 ConsolePrinter.line("  " + match.getResult());
             }
         }
 
-        HeaderRenderer.section("Standings");
+        HeaderRenderer.section("Puan Durumu");
         renderCompactStandings(league, team);
     }
 
@@ -184,27 +185,27 @@ public class MatchScreen implements Screen {
             .orElse(null);
         if (best != null) {
             double rating = 6.0 + (best.getOverallRating() / 100.0) * 3.0 + best.getForm() * 0.2;
-            ConsolePrinter.line(String.format("  - Best Player: %s, rating %.1f", best.getName(), rating));
+            ConsolePrinter.line(String.format("  - En iyi oyuncu: %s, not %.1f", best.getName(), rating));
         }
 
         boolean listedInjury = false;
         for (IPlayer player : team.getSquad()) {
             if (player.isInjured()) {
-                ConsolePrinter.line("  - Injury: " + player.getName()
-                    + ", out for " + player.getInjuryGamesRemaining() + " week(s)");
+                ConsolePrinter.line("  - Sakatlik: " + player.getName()
+                    + ", " + player.getInjuryGamesRemaining() + " hafta yok");
                 listedInjury = true;
             }
         }
         if (!listedInjury) {
-            ConsolePrinter.line("  - Injury: none");
+            ConsolePrinter.line("  - Sakatlik: yok");
         }
         if (newInjuries > 0) {
-            ConsolePrinter.line("  - New injuries this week: " + newInjuries);
+            ConsolePrinter.line("  - Bu haftaki yeni sakatlik: " + newInjuries);
         }
     }
 
     private void renderCompactStandings(ILeague league, ITeam playerTeam) {
-        String[] headers = {"#", "Team", "P", "W", "D", "L", "GD", "Pts"};
+        String[] headers = {"#", "Takim", "P", "G", "B", "M", "AV", "Pts"};
         int[] widths = {3, 22, 3, 3, 3, 3, 4, 4};
         List<String[]> rows = new ArrayList<>();
         int rank = 1;
@@ -232,20 +233,20 @@ public class MatchScreen implements Screen {
 
     private void generateNews(GameContext ctx, ILeague league, ITeam team, int week) {
         if (playerResult != null) {
-            ctx.addNews("[Week " + week + "] " + playerResult + ".");
+            ctx.addNews("[Hafta " + week + "] " + playerResult + ".");
         }
         if (newInjuries > 0) {
-            ctx.addNews("[Week " + week + "] Injury alert: " + newInjuries + " player(s) unavailable.");
+            ctx.addNews("[Hafta " + week + "] Sakatlik uyarisi: " + newInjuries + " oyuncu yok.");
         }
         List<ITeam> standings = league.getStandings().getTeams();
         if (!standings.isEmpty()) {
             ITeam leader = standings.get(0);
-            ctx.addNews("[Week " + week + "] " + leader.getName()
-                + " leads with " + leader.getPoints() + " pts.");
+            ctx.addNews("[Hafta " + week + "] " + leader.getName()
+                + " " + leader.getPoints() + " puanla lider.");
         }
         int rank = league.getStandings().getRankOf(team);
-        ctx.addNews("[Week " + week + "] " + team.getName()
-            + " is " + rank + UiStats.ordinal(rank) + " in the table.");
+        ctx.addNews("[Hafta " + week + "] " + team.getName()
+            + " tabloda " + rank + ". sirada.");
     }
 
     private IMatch findPlayerMatch(ILeague league, ITeam team, int week) {
@@ -274,9 +275,9 @@ public class MatchScreen implements Screen {
     }
 
     private void showHelp() {
-        HeaderRenderer.section("Match Help");
-        ConsolePrinter.line("  Enter 1 to simulate every fixture in the current week.");
-        ConsolePrinter.line("  The report includes your result, match events, injuries, and table movement.");
+        HeaderRenderer.section("Mac Yardimi");
+        ConsolePrinter.line("  Bu haftadaki tum maclari simule etmek icin 1 gir.");
+        ConsolePrinter.line("  Rapor takim sonucunu, mac olaylarini, sakatliklari ve tablo hareketini gosterir.");
         ConsolePrinter.blank();
     }
 }

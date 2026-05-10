@@ -9,31 +9,48 @@ import java.util.Map;
 
 public class SaveLoadService {
 
+    private static final File SAVE_DIR = new File(System.getProperty("user.home"), ".sports-manager/saves");
+
     public static void saveGame(String filePath, ISport sport, ILeague league, ITeam playerTeam) {
         saveGameResult(filePath, sport, league, playerTeam);
     }
 
     public static boolean saveGameResult(String filePath, ISport sport, ILeague league, ITeam playerTeam) {
         GameSaveData data = createSaveData(sport, league, playerTeam);
+        File target = resolveSaveFile(filePath);
+        File parent = target.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            System.out.println("Kayit basarisiz: kayit klasoru olusturulamadi " + parent);
+            return false;
+        }
 
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(target))) {
             out.writeObject(data);
-            System.out.println("Game saved successfully: " + filePath);
+            System.out.println("Oyun kaydedildi: " + target.getAbsolutePath());
             return true;
         } catch (IOException e) {
-            System.out.println("Save failed: " + e.getMessage());
+            System.out.println("Kayit basarisiz: " + e.getMessage());
             return false;
         }
     }
 
     public static LoadedGame loadGame(String filePath, SportRegistry registry) {
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
+        File target = resolveSaveFile(filePath);
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(target))) {
             GameSaveData data = (GameSaveData) in.readObject();
             return rebuildGame(data, registry);
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Load failed: " + e.getMessage());
+            System.out.println("Yukleme basarisiz: " + e.getMessage());
             return null;
         }
+    }
+
+    public static File resolveSaveFile(String filePath) {
+        File file = new File(filePath);
+        if (file.isAbsolute() || filePath.startsWith("/") || filePath.startsWith("\\")) {
+            return file;
+        }
+        return new File(SAVE_DIR, filePath);
     }
 
     private static GameSaveData createSaveData(ISport sport, ILeague league, ITeam playerTeam) {
@@ -110,7 +127,7 @@ public class SaveLoadService {
         SportFactory factory = registry.getFactory(data.getSportName());
 
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown sport in save file: " + data.getSportName());
+            throw new IllegalArgumentException("Kayit dosyasinda bilinmeyen spor: " + data.getSportName());
         }
 
         ISport sport = factory.createSport();

@@ -11,6 +11,7 @@ import com.sportsmanager.ui.console.components.TableRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Full league standings table. The player's team row is marked with ">".
@@ -30,26 +31,28 @@ public class LeagueTableScreen implements Screen {
         ITeam playerTeam = ctx.getPlayerTeam();
 
         if (league == null) {
-            ConsolePrinter.error("No active league.");
+            ConsolePrinter.error("Aktif lig yok.");
             ConsolePrinter.prompt();
             return;
         }
 
-        HeaderRenderer.render(league.getName() + " - Table",
-            "Season " + ctx.getCurrentSeason() + " | Current week " + league.getCurrentWeek());
+        HeaderRenderer.render(league.getName() + " - Tablo",
+            "Sezon " + ctx.getCurrentSeason() + " | Mevcut hafta " + league.getCurrentWeek());
 
-        String[] headers = {"#", "Team", "P", "W", "D", "L", "GF", "GA", "GD", "Pts"};
+        String[] headers = {"#", "Takim", "P", "G", "B", "M", "GF", "GA", "AV", "Pts"};
         int[] widths = {3, 22, 3, 3, 3, 3, 4, 4, 4, 4};
         List<String[]> rows = new ArrayList<>();
         int rank = 1;
         int playerRankIndex = -1;
+        Map<ITeam, int[]> goalTotals = UiStats.goalTotals(league);
 
         for (ITeam team : league.getStandings().getTeams()) {
             if (team.equals(playerTeam)) {
                 playerRankIndex = rank - 1;
             }
-            int gf = UiStats.goalsFor(league, team);
-            int ga = UiStats.goalsAgainst(league, team);
+            int[] goals = goalTotals.getOrDefault(team, new int[]{0, 0});
+            int gf = goals[0];
+            int ga = goals[1];
             int gd = gf - ga;
             rows.add(new String[]{
                 String.valueOf(rank++),
@@ -68,7 +71,7 @@ public class LeagueTableScreen implements Screen {
         ConsolePrinter.blank();
         TableRenderer.renderWithMarker(headers, widths, rows, playerRankIndex, ">");
         ConsolePrinter.blank();
-        ConsolePrinter.line("  > = your team");
+        ConsolePrinter.line("  > = senin takimin");
         ConsolePrinter.navHint();
         ConsolePrinter.blank();
         ConsolePrinter.prompt();
@@ -81,7 +84,7 @@ public class LeagueTableScreen implements Screen {
         }
         if (ConsoleInput.isHelp(input)) {
             ConsolePrinter.blank();
-            ConsolePrinter.line("  League Table Help: P=played, GF=for, GA=against, GD=difference, Pts=points.");
+            ConsolePrinter.line("  Lig Tablosu Yardimi: P=oynanan, GF=atilan, GA=yenilen, AV=averaj, Pts=puan.");
             ConsolePrinter.blank();
             return this;
         }

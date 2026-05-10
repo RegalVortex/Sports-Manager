@@ -10,6 +10,7 @@ import com.sportsmanager.core.IPlayer;
 import com.sportsmanager.core.ISport;
 import com.sportsmanager.core.ITactic;
 import com.sportsmanager.core.ITeam;
+import com.sportsmanager.core.LineupWarnings;
 import com.sportsmanager.core.MatchResult;
 import com.sportsmanager.core.SportFactory;
 import com.sportsmanager.core.SportRegistry;
@@ -19,7 +20,6 @@ import com.sportsmanager.save.SaveLoadService;
 import com.sportsmanager.setup.GameSetupService;
 import com.sportsmanager.setup.LeaguePreset;
 import com.sportsmanager.setup.PresetData;
-import com.sportsmanager.ui.console.screens.LineupWarnings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -446,7 +446,7 @@ public class ModernSportsManagerUi {
             statCard("Puan", String.valueOf(team.getPoints()), AMBER),
             statCard("Takim Gucu", String.valueOf(team.getTeamOverallRating()), GREEN),
             statCard("Karne", league.getWins(team) + "G " + league.getDraws(team) + "B " + league.getLosses(team) + "M", CORAL),
-            statCard("Taktik", team.getTactic() == null ? "Yok" : team.getTactic().getName(), TEAL)
+            statCard("Taktik", team.getTactic() == null ? "Yok" : turkishTactic(team.getTactic().getName()), TEAL)
         );
         page.getChildren().add(stats);
 
@@ -1185,14 +1185,14 @@ public class ModernSportsManagerUi {
 
         ComboBox<String> position = new ComboBox<>();
         List<String> positions = new ArrayList<>();
-        positions.add("All");
+        positions.add("Tum");
         for (IPlayer player : team.getSquad()) {
             if (!positions.contains(player.getPosition())) {
                 positions.add(player.getPosition());
             }
         }
         position.setItems(FXCollections.observableArrayList(positions));
-        position.getSelectionModel().select("All");
+        position.getSelectionModel().select("Tum");
         CheckBox injuredOnly = new CheckBox("Sadece sakatlar");
         Button apply = ghostButton("Filtrele");
         HBox filters = new HBox(12, field("Pozisyon", position), injuredOnly, apply);
@@ -1202,7 +1202,7 @@ public class ModernSportsManagerUi {
         table.setItems(FXCollections.observableArrayList(team.getSquad()));
         apply.setOnAction(e -> {
             List<IPlayer> players = new ArrayList<>(team.getSquad());
-            if (!"All".equals(position.getValue())) {
+            if (!"Tum".equals(position.getValue())) {
                 players.removeIf(player -> !player.getPosition().equals(position.getValue()));
             }
             if (injuredOnly.isSelected()) {
@@ -1536,7 +1536,7 @@ public class ModernSportsManagerUi {
         TilePane options = tilePane(260);
         if (factory != null) {
             for (ITactic tactic : factory.getAvailableTactics()) {
-                VBox box = card(tactic.getName());
+                VBox box = card(turkishTactic(tactic.getName()));
                 boolean active = team.getTactic() != null && team.getTactic().getName().equalsIgnoreCase(tactic.getName());
                 int attackBias = (int) Math.round(tactic.getAttackModifier() * 50);
                 int risk = (int) Math.round((tactic.getAttackModifier() - tactic.getDefenseModifier() + 1.0) * 50);
@@ -1551,7 +1551,7 @@ public class ModernSportsManagerUi {
                 choose.setDisable(active);
                 choose.setOnAction(e -> {
                     team.setTactic(tactic);
-                    toast = "Taktik " + tactic.getName() + " olarak degisti.";
+                    toast = "Taktik " + turkishTactic(tactic.getName()) + " olarak degisti.";
                     render();
                 });
                 box.getChildren().add(choose);
@@ -1693,7 +1693,7 @@ public class ModernSportsManagerUi {
         for (int i = 0; i < SLOT_FILES.length; i++) {
             int slot = i + 1;
             VBox box = card("Slot " + slot);
-            File file = new File(SLOT_FILES[i]);
+            File file = SaveLoadService.resolveSaveFile(SLOT_FILES[i]);
             SaveSummary summary = readSaveSummary(SLOT_FILES[i]);
             if (summary == null) {
                 box.getChildren().add(metricRow("Durum", "Bos"));
@@ -1723,7 +1723,7 @@ public class ModernSportsManagerUi {
             Button delete = dangerButton("Sil");
             delete.setDisable(!file.exists());
             delete.setOnAction(e -> {
-                File target = new File(SLOT_FILES[slot - 1]);
+                File target = SaveLoadService.resolveSaveFile(SLOT_FILES[slot - 1]);
                 toast = target.delete() ? "Slot " + slot + " silindi." : "Slot " + slot + " silinemedi.";
                 render();
             });
@@ -1827,7 +1827,7 @@ public class ModernSportsManagerUi {
     }
 
     private boolean confirmOverwriteSlot(int slot) {
-        if (!new File(SLOT_FILES[slot - 1]).exists()) {
+        if (!SaveLoadService.resolveSaveFile(SLOT_FILES[slot - 1]).exists()) {
             return true;
         }
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -2055,10 +2055,10 @@ public class ModernSportsManagerUi {
         VBox box = card(step);
         box.getChildren().add(bigText(title));
         if (draftSport != null) {
-            box.getChildren().add(metricRow("Sport", draftSport));
+            box.getChildren().add(metricRow("Spor", turkishSport(draftSport)));
         }
         if (draftLeague != null) {
-            box.getChildren().add(metricRow("League", draftLeague.getLeagueName()));
+            box.getChildren().add(metricRow("Lig", draftLeague.getLeagueName()));
         }
         return box;
     }
@@ -2364,6 +2364,22 @@ public class ModernSportsManagerUi {
             return "Voleybol";
         }
         return sport;
+    }
+
+    private String turkishTactic(String tactic) {
+        if (tactic == null) {
+            return "-";
+        }
+        if ("OFFENSIVE".equalsIgnoreCase(tactic)) {
+            return "Hucum";
+        }
+        if ("BALANCED".equalsIgnoreCase(tactic)) {
+            return "Dengeli";
+        }
+        if ("DEFENSIVE".equalsIgnoreCase(tactic)) {
+            return "Defans";
+        }
+        return tactic;
     }
 
     private String turkishWarning(String warning) {
@@ -2796,7 +2812,7 @@ public class ModernSportsManagerUi {
     }
 
     private SaveSummary readSaveSummary(String path) {
-        File file = new File(path);
+        File file = SaveLoadService.resolveSaveFile(path);
         if (!file.exists()) {
             return null;
         }
@@ -2886,6 +2902,17 @@ public class ModernSportsManagerUi {
         }
     }
 
+
+    private static final class TeamPreview {
+        final int overall;
+        final PlayStyle recommendedStyle;
+
+        TeamPreview(int overall, PlayStyle recommendedStyle) {
+            this.overall = overall;
+            this.recommendedStyle = recommendedStyle;
+        }
+    }
+
     private static class ProfileCoach implements ICoach, Serializable {
         private static final long serialVersionUID = 1L;
 
@@ -2952,20 +2979,11 @@ public class ModernSportsManagerUi {
                 player.train("serve", 1 + bonus);
             } else if ("DEFENSIVE".equalsIgnoreCase(specialty)) {
                 player.train("block", 2 + bonus);
-                player.train("receive", 1 + bonus);
+                player.train("reception", 1 + bonus);
             } else {
-                player.train("stamina", 2 + bonus);
+                player.train("serve", 1 + bonus);
+                player.train("reception", 1 + bonus);
             }
-        }
-    }
-
-    private static class TeamPreview {
-        private final int overall;
-        private final PlayStyle recommendedStyle;
-
-        TeamPreview(int overall, PlayStyle recommendedStyle) {
-            this.overall = overall;
-            this.recommendedStyle = recommendedStyle;
         }
     }
 }

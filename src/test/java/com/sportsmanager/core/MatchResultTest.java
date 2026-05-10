@@ -114,5 +114,10 @@ class MatchResultTest {
         public int getTeamOverallRating() {
             return 50;
         }
+
+        @Override
+        public int getExpectedLineupSize() {
+            return 11;
+        }
     }
 }

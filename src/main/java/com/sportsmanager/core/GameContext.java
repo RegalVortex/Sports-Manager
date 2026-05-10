@@ -17,7 +17,7 @@ public class GameContext {
 
     private static final int MAX_NEWS = 50;
 
-    private static GameContext instance;
+    private static volatile GameContext instance;
     private ISport activeSport;
     private ILeague league;
     private ITeam playerTeam;
@@ -29,7 +29,11 @@ public class GameContext {
 
     public static GameContext getInstance() {
         if (instance == null) {
-            instance = new GameContext();
+            synchronized (GameContext.class) {
+                if (instance == null) {
+                    instance = new GameContext();
+                }
+            }
         }
         return instance;
     }

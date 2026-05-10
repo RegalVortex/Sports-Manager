@@ -1,7 +1,4 @@
-package com.sportsmanager.ui.console.screens;
-
-import com.sportsmanager.core.IPlayer;
-import com.sportsmanager.core.ITeam;
+package com.sportsmanager.core;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,24 +16,24 @@ public final class LineupWarnings {
         List<IPlayer> lineup = team.getStartingLineup();
 
         if (lineup.isEmpty()) {
-            warnings.add("Starting lineup is empty - no players selected.");
+            warnings.add("Ilk kadro bos - oyuncu secilmemis.");
             return warnings;
         }
 
         for (IPlayer player : lineup) {
             if (player.isInjured()) {
-                warnings.add("Injured player in lineup: " + player.getName()
-                    + " (" + player.getInjuryGamesRemaining() + " wk remaining)");
+                warnings.add("Ilk kadroda sakat oyuncu: " + player.getName()
+                    + " (" + player.getInjuryGamesRemaining() + " hafta kaldi)");
             }
         }
 
         if (teamHasGkPlayer(team) && !lineupHasPosition(lineup, "GK")) {
-            warnings.add("No goalkeeper (GK) in starting lineup.");
+            warnings.add("Ilk kadroda kaleci (GK) yok.");
         }
 
         int expected = expectedLineupSize(team);
         if (lineup.size() < expected) {
-            warnings.add("Lineup has " + lineup.size() + " players (expected " + expected + ").");
+            warnings.add("Kadroda " + lineup.size() + " oyuncu var (beklenen " + expected + ").");
         }
 
         return warnings;
@@ -47,13 +44,7 @@ public final class LineupWarnings {
     }
 
     public static int expectedLineupSize(ITeam team) {
-        if (teamHasGkPlayer(team)) {
-            return 11;
-        }
-        if (team.getSquad().size() <= 18) {
-            return 6;
-        }
-        return 11;
+        return team.getExpectedLineupSize();
     }
 
     private static boolean teamHasPosition(ITeam team, String position) {

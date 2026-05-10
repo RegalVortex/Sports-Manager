@@ -13,6 +13,11 @@ public class FootballTeam extends AbstractTeam {
     }
 
     @Override
+    public int getExpectedLineupSize() {
+        return 11;
+    }
+
+    @Override
     public boolean validateLineup(List<IPlayer> chosen) {
         if (chosen == null || chosen.size() != 11) {
             return false;

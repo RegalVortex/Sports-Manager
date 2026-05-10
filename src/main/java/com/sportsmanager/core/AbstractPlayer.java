@@ -123,10 +123,10 @@ public abstract class AbstractPlayer implements IPlayer {
     @Override
     public String getFormLabel() {
         switch (form) {
-            case 0: return "Kötü";
+            case 0: return "Kotu";
             case 1: return "Normal";
-            case 2: return "İyi";
-            case 3: return "Mükemmel";
+            case 2: return "Iyi";
+            case 3: return "Mukemmel";
             default: return "Normal";
         }
     }

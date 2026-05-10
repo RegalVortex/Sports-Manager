@@ -30,23 +30,28 @@ public class SaveLoadScreen implements Screen {
     };
 
     private final Screen parent;
-    private final SportRegistry registry = new SportRegistry();
+    private final SportRegistry registry;
     private int phase;
     private String message;
 
     public SaveLoadScreen(Screen parent) {
+        this(parent, new SportRegistry());
+    }
+
+    public SaveLoadScreen(Screen parent, SportRegistry registry) {
         this.parent = parent;
+        this.registry = registry;
     }
 
     @Override
     public void render() {
         HeaderRenderer.render(title(), subtitle());
         renderSlotStatus();
-        HeaderRenderer.section("Actions");
+        HeaderRenderer.section("Aksiyonlar");
         if (phase == 0) {
-            MenuRenderer.render(List.of("Save Game", "Load Game", "Delete Save"), true);
+            MenuRenderer.render(List.of("Oyunu Kaydet", "Oyunu Yukle", "Kaydi Sil"), true);
         } else {
-            ConsolePrinter.line("  Choose slot 1-" + SLOT_FILES.length + ".");
+            ConsolePrinter.line("  Slot sec: 1-" + SLOT_FILES.length + ".");
             ConsolePrinter.navHint();
         }
         if (message != null) {
@@ -95,7 +100,7 @@ public class SaveLoadScreen implements Screen {
         if (ConsoleInput.inRange(choice, 1, 3)) {
             phase = choice;
         } else {
-            message = "Invalid choice. Enter 1-3, 0, H, or Q.";
+            message = "Gecersiz secim. 1-3, 0, H veya Q gir.";
         }
         return this;
     }
@@ -103,7 +108,7 @@ public class SaveLoadScreen implements Screen {
     private Screen handleSave(String input) {
         int slot = ConsoleInput.parseChoice(input);
         if (!ConsoleInput.inRange(slot, 1, SLOT_FILES.length)) {
-            message = "Invalid slot. Choose 1-" + SLOT_FILES.length + ".";
+            message = "Gecersiz slot. 1-" + SLOT_FILES.length + " sec.";
             return this;
         }
 
@@ -112,21 +117,21 @@ public class SaveLoadScreen implements Screen {
         ILeague league = ctx.getLeague();
         ITeam team = ctx.getPlayerTeam();
         if (sport == null || league == null || team == null) {
-            message = "No active game to save.";
+            message = "Kaydedilecek aktif oyun yok.";
             phase = 0;
             return this;
         }
 
-        File file = new File(SLOT_FILES[slot - 1]);
-        if (file.exists() && !confirm("Slot " + slot + " already has data. Overwrite? [Y/N]")) {
-            message = "Save cancelled.";
+        File file = SaveLoadService.resolveSaveFile(SLOT_FILES[slot - 1]);
+        if (file.exists() && !confirm("Slot " + slot + " dolu. Uzerine yazilsin mi? [Y/N]")) {
+            message = "Kayit iptal edildi.";
             phase = 0;
             return this;
         }
 
         SaveLoadService.saveGame(SLOT_FILES[slot - 1], sport, league, team);
-        message = "Game saved. Season " + league.getCurrentSeason()
-            + ", Week " + league.getCurrentWeek() + ", " + team.getName() + ".";
+        message = "Oyun kaydedildi. Sezon " + league.getCurrentSeason()
+            + ", Hafta " + league.getCurrentWeek() + ", " + team.getName() + ".";
         phase = 0;
         return this;
     }
@@ -134,23 +139,23 @@ public class SaveLoadScreen implements Screen {
     private Screen handleLoad(String input) {
         int slot = ConsoleInput.parseChoice(input);
         if (!ConsoleInput.inRange(slot, 1, SLOT_FILES.length)) {
-            message = "Invalid slot. Choose 1-" + SLOT_FILES.length + ".";
+            message = "Gecersiz slot. 1-" + SLOT_FILES.length + " sec.";
             return this;
         }
-        File file = new File(SLOT_FILES[slot - 1]);
+        File file = SaveLoadService.resolveSaveFile(SLOT_FILES[slot - 1]);
         if (!file.exists()) {
-            message = "Slot " + slot + " is empty.";
+            message = "Slot " + slot + " bos.";
             return this;
         }
-        if (!confirm("Loading will replace current progress. Continue? [Y/N]")) {
-            message = "Load cancelled.";
+        if (!confirm("Yukleme mevcut ilerlemeyi degistirir. Devam edilsin mi? [Y/N]")) {
+            message = "Yukleme iptal edildi.";
             phase = 0;
             return this;
         }
 
         LoadedGame loaded = SaveLoadService.loadGame(SLOT_FILES[slot - 1], registry);
         if (loaded == null) {
-            message = "Load failed. The save may be corrupted.";
+            message = "Yukleme basarisiz. Kayit bozulmus olabilir.";
             phase = 0;
             return this;
         }
@@ -163,29 +168,29 @@ public class SaveLoadScreen implements Screen {
         SportFactory factory = registry.getFactory(sportName);
         ctx.setSportFactory(factory);
 
-        MainDashboardScreen dashboard = new MainDashboardScreen();
-        dashboard.setMessage("Loaded Slot " + slot + ".");
+        MainDashboardScreen dashboard = new MainDashboardScreen(registry);
+        dashboard.setMessage("Slot " + slot + " yuklendi.");
         return dashboard;
     }
 
     private Screen handleDelete(String input) {
         int slot = ConsoleInput.parseChoice(input);
         if (!ConsoleInput.inRange(slot, 1, SLOT_FILES.length)) {
-            message = "Invalid slot. Choose 1-" + SLOT_FILES.length + ".";
+            message = "Gecersiz slot. 1-" + SLOT_FILES.length + " sec.";
             return this;
         }
-        File file = new File(SLOT_FILES[slot - 1]);
+        File file = SaveLoadService.resolveSaveFile(SLOT_FILES[slot - 1]);
         if (!file.exists()) {
-            message = "Slot " + slot + " is already empty.";
+            message = "Slot " + slot + " zaten bos.";
             phase = 0;
             return this;
         }
-        if (!confirm("Delete Slot " + slot + " permanently? [Y/N]")) {
-            message = "Delete cancelled.";
+        if (!confirm("Slot " + slot + " kalici olarak silinsin mi? [Y/N]")) {
+            message = "Silme iptal edildi.";
             phase = 0;
             return this;
         }
-        message = file.delete() ? "Slot " + slot + " deleted." : "Could not delete Slot " + slot + ".";
+        message = file.delete() ? "Slot " + slot + " silindi." : "Slot " + slot + " silinemedi.";
         phase = 0;
         return this;
     }
@@ -199,10 +204,10 @@ public class SaveLoadScreen implements Screen {
 
     private void renderSlotStatus() {
         for (int i = 0; i < SLOT_FILES.length; i++) {
-            File file = new File(SLOT_FILES[i]);
-            String status = "Empty";
+            File file = SaveLoadService.resolveSaveFile(SLOT_FILES[i]);
+            String status = "Bos";
             if (file.exists()) {
-                status = "Saved " + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(file.lastModified()));
+                status = "Kayitli " + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(file.lastModified()));
             }
             ConsolePrinter.keyValue("Slot " + (i + 1), status);
         }
@@ -211,34 +216,34 @@ public class SaveLoadScreen implements Screen {
     private String title() {
         switch (phase) {
             case 1:
-                return "Save Game";
+                return "Oyunu Kaydet";
             case 2:
-                return "Load Game";
+                return "Oyunu Yukle";
             case 3:
-                return "Delete Save";
+                return "Kaydi Sil";
             default:
-                return "Save / Load";
+                return "Kaydet / Yukle";
         }
     }
 
     private String subtitle() {
         switch (phase) {
             case 1:
-                return "Pick where the current career should be saved";
+                return "Mevcut kariyerin kaydedilecegi slotu sec";
             case 2:
-                return "Pick a save to restore";
+                return "Geri yuklenecek kaydi sec";
             case 3:
-                return "Pick a save to remove";
+                return "Silinecek kaydi sec";
             default:
-                return "Three local slots, stored beside the project";
+                return "Uc yerel kayit slotu kullanilir";
         }
     }
 
     private void showHelp() {
-        HeaderRenderer.section("Save / Load Help");
-        ConsolePrinter.line("  Save writes the current season, week, team, squad, points, and fixtures.");
-        ConsolePrinter.line("  Load replaces the active game after confirmation.");
-        ConsolePrinter.line("  Delete only removes the selected local save slot.");
+        HeaderRenderer.section("Kaydet / Yukle Yardimi");
+        ConsolePrinter.line("  Kaydet mevcut sezonu, haftayi, takimi, kadroyu, puanlari ve fiksturu yazar.");
+        ConsolePrinter.line("  Yukle onaydan sonra aktif oyunu degistirir.");
+        ConsolePrinter.line("  Sil sadece secili yerel kayit slotunu kaldirir.");
         ConsolePrinter.blank();
     }
 }

@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface ITeam {
 
-       String getName();
+    String getName();
 
     List<IPlayer> getSquad();
 
@@ -27,5 +27,6 @@ public interface ITeam {
     void resetPoints();
 
     int getTeamOverallRating();
-   
+
+    int getExpectedLineupSize();
 }

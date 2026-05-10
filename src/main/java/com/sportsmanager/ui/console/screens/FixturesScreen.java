@@ -32,15 +32,15 @@ public class FixturesScreen implements Screen {
         ITeam playerTeam = ctx.getPlayerTeam();
 
         if (league == null) {
-            ConsolePrinter.error("No active league.");
+            ConsolePrinter.error("Aktif lig yok.");
             ConsolePrinter.prompt();
             return;
         }
 
-        HeaderRenderer.render("Fixtures", league.getName()
-            + " | Season " + ctx.getCurrentSeason() + " | Current week " + league.getCurrentWeek());
+        HeaderRenderer.render("Fikstur", league.getName()
+            + " | Sezon " + ctx.getCurrentSeason() + " | Mevcut hafta " + league.getCurrentWeek());
 
-        String[] headers = {"Week", "Home", "Away", "Result", "Status"};
+        String[] headers = {"Hafta", "Ev", "Dep", "Skor", "Durum"};
         int[] widths = {5, 22, 22, 9, 10};
         List<String[]> rows = new ArrayList<>();
         int marker = -1;
@@ -58,14 +58,14 @@ public class FixturesScreen implements Screen {
                 match.getHomeTeam().getName(),
                 match.getAwayTeam().getName(),
                 result == null ? "-" : result.getHomeScore() + "-" + result.getAwayScore(),
-                match.isPlayed() ? "Played" : "Upcoming"
+                match.isPlayed() ? "Oynandi" : "Yaklasiyor"
             });
         }
 
         ConsolePrinter.blank();
         TableRenderer.renderWithMarker(headers, widths, rows, marker, ">");
         ConsolePrinter.blank();
-        ConsolePrinter.line("  > = your next fixture");
+        ConsolePrinter.line("  > = siradaki macin");
         ConsolePrinter.navHint();
         ConsolePrinter.blank();
         ConsolePrinter.prompt();
@@ -78,7 +78,7 @@ public class FixturesScreen implements Screen {
         }
         if (ConsoleInput.isHelp(input)) {
             ConsolePrinter.blank();
-            ConsolePrinter.line("  Fixtures Help: played matches show a score; upcoming matches show '-'.");
+            ConsolePrinter.line("  Fikstur Yardimi: oynanan maclarda skor, yaklasan maclarda '-' gorunur.");
             ConsolePrinter.blank();
             return this;
         }

@@ -64,7 +64,7 @@ public final class ConsolePrinter {
     }
 
     public static void error(String msg) {
-        System.out.println("  [!] " + msg);
+        System.out.println("  [X] " + msg);
     }
 
     public static void success(String msg) {
@@ -80,6 +80,6 @@ public final class ConsolePrinter {
     }
 
     public static void navHint() {
-        System.out.println("  [0] Back    [H] Help    [Q] Quit");
+        System.out.println("  [0] Geri    [H] Yardim    [Q] Cikis");
     }
 }

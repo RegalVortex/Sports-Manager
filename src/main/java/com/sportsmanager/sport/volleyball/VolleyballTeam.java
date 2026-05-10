@@ -13,6 +13,11 @@ public class VolleyballTeam extends AbstractTeam {
     }
 
     @Override
+    public int getExpectedLineupSize() {
+        return 6;
+    }
+
+    @Override
     public boolean validateLineup(List<IPlayer> chosen) {
         if (chosen == null || chosen.size() != 6) {
             return false;

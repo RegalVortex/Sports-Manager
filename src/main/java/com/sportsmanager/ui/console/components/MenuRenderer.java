@@ -18,7 +18,7 @@ public final class MenuRenderer {
         }
         if (showBackHelpQuit) {
             System.out.println("  " + "-".repeat(42));
-            System.out.println("  [0] Back    [H] Help    [Q] Quit");
+            System.out.println("  [0] Geri    [H] Yardim    [Q] Cikis");
         }
     }
 }

@@ -52,9 +52,9 @@ class ConsoleScreenSmokeTest {
         assertDoesNotThrow(screen::render);
         String text = out.toString();
 
-        assertTrue(text.contains("MANAGER DASHBOARD"));
-        assertTrue(text.contains("Season 1 | Week 1 | Galatasaray"));
-        assertTrue(text.contains("NEXT MATCH"));
+        assertTrue(text.contains("MENAJER PANELI"));
+        assertTrue(text.contains("Sezon 1 | Hafta 1 | Galatasaray"));
+        assertTrue(text.contains("SIRADAKI MAC"));
     }
 
     @Test
@@ -73,9 +73,9 @@ class ConsoleScreenSmokeTest {
         assertDoesNotThrow(screen::render);
         String text = out.toString();
 
-        assertTrue(text.contains("SQUAD - GALATASARAY"));
-        assertTrue(text.contains("Name"));
-        assertTrue(text.contains("Fitness"));
+        assertTrue(text.contains("OYUNCULAR - GALATASARAY"));
+        assertTrue(text.contains("Ad"));
+        assertTrue(text.contains("Kond."));
     }
 
     @Test

@@ -24,12 +24,12 @@ public class NewsScreen implements Screen {
         GameContext ctx = GameContext.getInstance();
         List<String> news = ctx.getNewsFeed();
 
-        HeaderRenderer.render("Latest News",
-            news.size() + " item" + (news.size() == 1 ? "" : "s"));
+        HeaderRenderer.render("Son Haberler",
+            news.size() + " haber");
         ConsolePrinter.blank();
 
         if (news.isEmpty()) {
-            ConsolePrinter.info("No news yet. Play the next week to generate headlines.");
+            ConsolePrinter.info("Henuz haber yok. Haber uretmek icin sonraki haftayi oyna.");
         } else {
             for (int i = news.size() - 1; i >= 0; i--) {
                 ConsolePrinter.line("  " + news.get(i));
@@ -49,7 +49,7 @@ public class NewsScreen implements Screen {
         }
         if (ConsoleInput.isHelp(input)) {
             ConsolePrinter.blank();
-            ConsolePrinter.line("  News Help: dashboard shows only the last 3 items; this screen shows the full feed.");
+            ConsolePrinter.line("  Haber Yardimi: panel son 3 haberi, bu ekran tum haber akisini gosterir.");
             ConsolePrinter.blank();
             return this;
         }

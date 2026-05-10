@@ -21,7 +21,7 @@ public class GameSetupService {
         SportFactory factory = registry.getFactory(sportName);
 
         if (factory == null) {
-            throw new IllegalArgumentException("Unknown sport: " + sportName);
+            throw new IllegalArgumentException("Bilinmeyen spor: " + sportName);
         }
 
         ISport sport = factory.createSport();
@@ -39,7 +39,7 @@ public class GameSetupService {
         }
 
         if (playerTeam == null) {
-            throw new IllegalArgumentException("Selected team not found: " + selectedTeamName);
+            throw new IllegalArgumentException("Secilen takim bulunamadi: " + selectedTeamName);
         }
 
         ILeague league = factory.createLeague(preset.getLeagueName(), teams);

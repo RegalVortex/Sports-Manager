@@ -4,6 +4,7 @@ import com.sportsmanager.core.AbstractTeam;
 import com.sportsmanager.core.GameContext;
 import com.sportsmanager.core.IPlayer;
 import com.sportsmanager.core.ITeam;
+import com.sportsmanager.core.LineupWarnings;
 import com.sportsmanager.ui.console.ConsoleInput;
 import com.sportsmanager.ui.console.ConsolePrinter;
 import com.sportsmanager.ui.console.Screen;
@@ -34,7 +35,7 @@ public class LineupScreen implements Screen {
     public void render() {
         ITeam team = GameContext.getInstance().getPlayerTeam();
         if (team == null) {
-            ConsolePrinter.error("No active team.");
+            ConsolePrinter.error("Aktif takim yok.");
             ConsolePrinter.prompt();
             return;
         }
@@ -75,30 +76,30 @@ public class LineupScreen implements Screen {
     }
 
     private void renderMain(ITeam team) {
-        HeaderRenderer.render("Lineup - " + team.getName(),
-            "Starting: " + team.getStartingLineup().size()
+        HeaderRenderer.render("Kadro - " + team.getName(),
+            "Ilk kadro: " + team.getStartingLineup().size()
                 + " / " + LineupWarnings.expectedLineupSize(team));
 
         List<String> warnings = LineupWarnings.check(team);
-        HeaderRenderer.section("Warnings");
+        HeaderRenderer.section("Uyarilar");
         if (warnings.isEmpty()) {
-            AlertRenderer.success("Lineup is valid.");
+            AlertRenderer.success("Kadro gecerli.");
         } else {
             AlertRenderer.warnAll(warnings);
         }
 
-        HeaderRenderer.section("Current Lineup");
+        HeaderRenderer.section("Mevcut Ilk Kadro");
         renderPlayerTable(team.getStartingLineup(), true);
 
-        HeaderRenderer.section("Bench");
+        HeaderRenderer.section("Yedekler");
         renderPlayerTable(getBench(team), false);
 
-        HeaderRenderer.section("Actions");
+        HeaderRenderer.section("Aksiyonlar");
         MenuRenderer.render(Arrays.asList(
-            "Auto-fix lineup",
-            "Replace player",
-            "View bench",
-            "Validate lineup"
+            "Kadroyu otomatik duzelt",
+            "Oyuncu degistir",
+            "Yedekleri gor",
+            "Kadroyu kontrol et"
         ), true);
     }
 
@@ -118,37 +119,37 @@ public class LineupScreen implements Screen {
                 return this;
             case 2:
                 if (team.getStartingLineup().isEmpty()) {
-                    message = "Lineup is empty - nothing to replace.";
+                    message = "Kadro bos - degistirilecek oyuncu yok.";
                     return this;
                 }
                 if (getBench(team).isEmpty()) {
-                    message = "Bench is empty - no replacement available.";
+                    message = "Yedekler bos - uygun degisim yok.";
                     return this;
                 }
                 subPhase = 1;
                 return this;
             case 3:
                 message = getBench(team).isEmpty()
-                    ? "Bench is empty."
-                    : "Bench is shown below the current lineup.";
+                    ? "Yedekler bos."
+                    : "Yedekler mevcut kadronun altinda gosteriliyor.";
                 return this;
             case 4:
                 List<String> warnings = LineupWarnings.check(team);
                 message = warnings.isEmpty()
-                    ? "Lineup is valid and ready."
-                    : "Lineup has " + warnings.size() + " issue(s).";
+                    ? "Kadro gecerli ve hazir."
+                    : "Kadroda " + warnings.size() + " sorun var.";
                 return this;
             default:
-                ConsolePrinter.error("Invalid choice. Please enter a number between 0 and 4.");
+                ConsolePrinter.error("Gecersiz secim. 0-4 arasinda bir sayi gir.");
                 return this;
         }
     }
 
     private void renderPickOut(ITeam team) {
-        HeaderRenderer.render("Replace Player", "Step 1/2 - choose player leaving lineup");
+        HeaderRenderer.render("Oyuncu Degistir", "Adim 1/2 - cikacak oyuncuyu sec");
         renderNumberedPlayerList(team.getStartingLineup());
         ConsolePrinter.blank();
-        ConsolePrinter.line("  0. Cancel");
+        ConsolePrinter.line("  0. Iptal");
     }
 
     private Screen handlePickOut(String input, ITeam team) {
@@ -158,7 +159,7 @@ public class LineupScreen implements Screen {
         }
         int choice = ConsoleInput.parseChoice(input);
         if (!ConsoleInput.inRange(choice, 1, team.getStartingLineup().size())) {
-            message = "Invalid choice. Choose a lineup player or 0 to cancel.";
+            message = "Gecersiz secim. Ilk kadro oyuncusu sec veya 0 ile iptal et.";
             return this;
         }
         outIndex = choice - 1;
@@ -168,10 +169,10 @@ public class LineupScreen implements Screen {
 
     private void renderPickIn(ITeam team) {
         IPlayer out = team.getStartingLineup().get(outIndex);
-        HeaderRenderer.render("Replace Player", "Step 2/2 - replace " + out.getName());
+        HeaderRenderer.render("Oyuncu Degistir", "Adim 2/2 - " + out.getName() + " yerine oyuncu sec");
         renderNumberedPlayerList(getBench(team));
         ConsolePrinter.blank();
-        ConsolePrinter.line("  0. Cancel");
+        ConsolePrinter.line("  0. Iptal");
     }
 
     private Screen handlePickIn(String input, ITeam team) {
@@ -182,7 +183,7 @@ public class LineupScreen implements Screen {
         List<IPlayer> bench = getBench(team);
         int choice = ConsoleInput.parseChoice(input);
         if (!ConsoleInput.inRange(choice, 1, bench.size())) {
-            message = "Invalid choice. Choose a bench player or 0 to cancel.";
+            message = "Gecersiz secim. Yedek oyuncu sec veya 0 ile iptal et.";
             return this;
         }
 
@@ -194,8 +195,8 @@ public class LineupScreen implements Screen {
         boolean success = team.getStartingLineup().contains(inPlayer)
             && !team.getStartingLineup().contains(outPlayer);
         message = success
-            ? "Replacement done: " + outName + " out, " + inPlayer.getName() + " in."
-            : "Replacement rejected. Check injuries and formation rules.";
+            ? "Degisiklik yapildi: " + outName + " cikti, " + inPlayer.getName() + " girdi."
+            : "Degisiklik reddedildi. Sakatlik ve kadro kurallarini kontrol et.";
 
         subPhase = 0;
         outIndex = -1;
@@ -204,7 +205,7 @@ public class LineupScreen implements Screen {
 
     private void autoFix(ITeam team) {
         if (!(team instanceof AbstractTeam)) {
-            message = "Auto-fix is not available for this team.";
+            message = "Bu takim icin otomatik duzeltme kullanilamaz.";
             return;
         }
         List<IPlayer> before = new ArrayList<>(team.getStartingLineup());
@@ -218,12 +219,12 @@ public class LineupScreen implements Screen {
             }
         }
         message = replaced > 0
-            ? "Auto-fix replaced " + replaced + " player(s)."
-            : "Auto-fix found no replacement needed.";
+            ? "Otomatik duzeltme " + replaced + " oyuncu degistirdi."
+            : "Otomatik duzeltme gereken oyuncu bulmadi.";
     }
 
     private void renderPlayerTable(List<IPlayer> players, boolean lineup) {
-        String[] headers = {"#", "Name", "Pos", "OVR", "Form", "Status"};
+        String[] headers = {"#", "Ad", "Pos", "Guc", "Form", "Durum"};
         int[] widths = {3, 22, 14, 4, 8, 14};
         List<String[]> rows = new ArrayList<>();
         for (int i = 0; i < players.size(); i++) {
@@ -264,17 +265,17 @@ public class LineupScreen implements Screen {
 
     private String status(IPlayer player, boolean lineup) {
         if (player.isInjured()) {
-            return "Injured " + player.getInjuryGamesRemaining() + "w";
+            return "Sakat " + player.getInjuryGamesRemaining() + "h";
         }
-        return lineup ? "Starting" : "Fit";
+        return lineup ? "Ilk kadro" : "Hazir";
     }
 
     private void showHelp() {
         ConsolePrinter.blank();
-        ConsolePrinter.line("  Lineup Help");
-        ConsolePrinter.line("  Auto-fix replaces injured starters when a valid healthy bench player exists.");
-        ConsolePrinter.line("  Replace player lets you manually swap one starter with one bench player.");
-        ConsolePrinter.line("  Validate lineup explains whether injuries or formation rules block the team.");
+        ConsolePrinter.line("  Kadro Yardimi");
+        ConsolePrinter.line("  Otomatik duzeltme uygun saglikli yedek varsa sakat ilk kadro oyuncusunu degistirir.");
+        ConsolePrinter.line("  Oyuncu degistir bir ilk kadro oyuncusunu bir yedekle degistirmeni saglar.");
+        ConsolePrinter.line("  Kadro kontrolu sakatlik veya dizilis kurali sorunlarini aciklar.");
         ConsolePrinter.blank();
     }
 }

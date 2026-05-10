@@ -37,13 +37,13 @@ public class SquadScreen implements Screen {
     public void render() {
         ITeam team = GameContext.getInstance().getPlayerTeam();
         if (team == null) {
-            ConsolePrinter.error("No active team.");
+            ConsolePrinter.error("Aktif takim yok.");
             ConsolePrinter.prompt();
             return;
         }
 
-        HeaderRenderer.render("Squad - " + team.getName(),
-            "OVR " + team.getTeamOverallRating() + " | Filter " + filterLabel() + " | Sort " + sortLabel());
+        HeaderRenderer.render("Oyuncular - " + team.getName(),
+            "Guc " + team.getTeamOverallRating() + " | Filtre " + filterLabel() + " | Siralama " + sortLabel());
         renderTable(buildPlayers(team), team);
 
         if (message != null) {
@@ -55,13 +55,13 @@ public class SquadScreen implements Screen {
         if (pickingPosition) {
             renderPositionPicker(team);
         } else {
-            HeaderRenderer.section("Actions");
+            HeaderRenderer.section("Aksiyonlar");
             MenuRenderer.render(Arrays.asList(
-                "View All Players",
-                "Filter by Position",
-                "Sort by Overall",
-                "Sort by Form",
-                "View Injured Players"
+                "Tum Oyuncular",
+                "Pozisyona Gore Filtrele",
+                "Guce Gore Sirala",
+                "Forma Gore Sirala",
+                "Sakat Oyuncular"
             ), true);
         }
         ConsolePrinter.prompt();
@@ -95,7 +95,7 @@ public class SquadScreen implements Screen {
                 positionFilter = "ALL";
                 injuredOnly = false;
                 sortMode = 0;
-                message = "Showing all players.";
+                message = "Tum oyuncular gosteriliyor.";
                 return this;
             case 2:
                 pickingPosition = true;
@@ -103,25 +103,25 @@ public class SquadScreen implements Screen {
             case 3:
                 sortMode = 0;
                 injuredOnly = false;
-                message = "Sorted by overall rating.";
+                message = "Guce gore siralandi.";
                 return this;
             case 4:
                 sortMode = 1;
                 injuredOnly = false;
-                message = "Sorted by form.";
+                message = "Forma gore siralandi.";
                 return this;
             case 5:
                 injuredOnly = true;
-                message = "Showing injured players only.";
+                message = "Sadece sakat oyuncular gosteriliyor.";
                 return this;
             default:
-                ConsolePrinter.error("Invalid choice. Please enter a number between 0 and 5.");
+                ConsolePrinter.error("Gecersiz secim. 0-5 arasinda bir sayi gir.");
                 return this;
         }
     }
 
     private void renderTable(List<IPlayer> players, ITeam team) {
-        String[] headers = {"Name", "Pos", "OVR", "Form", "Fitness", "Status"};
+        String[] headers = {"Ad", "Pos", "Guc", "Form", "Kond.", "Durum"};
         int[] widths = {22, 14, 4, 8, 7, 14};
         List<String[]> rows = new ArrayList<>();
         for (IPlayer player : players) {
@@ -140,8 +140,8 @@ public class SquadScreen implements Screen {
 
     private void renderPositionPicker(ITeam team) {
         List<String> positions = positions(team);
-        HeaderRenderer.section("Choose Position");
-        ConsolePrinter.line("  0. Back");
+        HeaderRenderer.section("Pozisyon Sec");
+        ConsolePrinter.line("  0. Geri");
         for (int i = 0; i < positions.size(); i++) {
             ConsolePrinter.line("  " + (i + 1) + ". " + positions.get(i));
         }
@@ -155,10 +155,10 @@ public class SquadScreen implements Screen {
             positionFilter = positions.get(choice - 1);
             injuredOnly = false;
             pickingPosition = false;
-            message = "Filtered by " + positionFilter + ".";
+            message = positionFilter + " pozisyonuna gore filtrelendi.";
             return this;
         }
-        ConsolePrinter.error("Invalid position. Please choose a listed number or 0 to go back.");
+        ConsolePrinter.error("Gecersiz pozisyon. Listedeki numaralardan birini sec veya 0 ile geri don.");
         return this;
     }
 
@@ -189,12 +189,12 @@ public class SquadScreen implements Screen {
 
     private String status(IPlayer player, ITeam team) {
         if (player.isInjured()) {
-            return "Injured " + player.getInjuryGamesRemaining() + "w";
+            return "Sakat " + player.getInjuryGamesRemaining() + "h";
         }
         if (team.getStartingLineup().contains(player)) {
-            return "Starting";
+            return "Ilk kadro";
         }
-        return "Fit";
+        return "Hazir";
     }
 
     private String fitness(IPlayer player) {
@@ -207,21 +207,21 @@ public class SquadScreen implements Screen {
 
     private String filterLabel() {
         if (injuredOnly) {
-            return "Injured";
+            return "Sakat";
         }
         return positionFilter;
     }
 
     private String sortLabel() {
-        return sortMode == 1 ? "Form" : "Overall";
+        return sortMode == 1 ? "Form" : "Guc";
     }
 
     private void showHelp() {
         ConsolePrinter.blank();
-        ConsolePrinter.line("  Squad Help");
-        ConsolePrinter.line("  View all players to reset filters.");
-        ConsolePrinter.line("  Filter by position when you need a specific replacement.");
-        ConsolePrinter.line("  Sort by form before a match, and check injured players before lineup changes.");
+        ConsolePrinter.line("  Oyuncu Yardimi");
+        ConsolePrinter.line("  Tum oyuncular filtreleri sifirlar.");
+        ConsolePrinter.line("  Belirli yedek ararken pozisyona gore filtrele.");
+        ConsolePrinter.line("  Mac oncesi forma gore sirala ve degisiklikten once sakatlari kontrol et.");
         ConsolePrinter.blank();
     }
 }
