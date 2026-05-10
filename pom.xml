@@ -7,7 +7,7 @@
 
     <groupId>com.sportsmanager</groupId>
     <artifactId>sports-manager</artifactId>
-    <version>1.0-M2</version>
+    <version>1.0-M3</version>
     <packaging>jar</packaging>
 
     <name>Sports Manager</name>
