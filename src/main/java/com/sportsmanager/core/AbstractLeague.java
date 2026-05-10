@@ -11,12 +11,14 @@ public abstract class AbstractLeague implements ILeague {
     protected List<IMatch> fixtures;
     protected int currentWeek;
     protected int totalWeeks;
+    protected int currentSeason;   // ← YENİ
 
     public AbstractLeague(String name, List<ITeam> teams) {
         this.name = name;
         this.teams = new ArrayList<>(teams);
         this.fixtures = new ArrayList<>();
         this.currentWeek = 1;
+        this.currentSeason = 1;    // ← YENİ
         generateFixtures();
         this.totalWeeks = calculateTotalWeeks();
     }
@@ -34,6 +36,11 @@ public abstract class AbstractLeague implements ILeague {
     @Override
     public int getCurrentWeek() {
         return currentWeek;
+    }
+
+    @Override
+    public int getCurrentSeason() {   // ← YENİ
+        return currentSeason;
     }
 
     @Override
@@ -61,6 +68,14 @@ public abstract class AbstractLeague implements ILeague {
             return;
         }
 
+        // Old injuries tick down at the start of a new week; fresh match injuries
+        // remain visible and unavailable after the match.
+        for (ITeam team : teams) {
+            for (IPlayer player : team.getSquad()) {
+                player.decrementInjury();
+            }
+        }
+
         for (ITeam team : teams) {
             ICoach coach = team.getCoach();
             if (coach != null) {
@@ -74,9 +89,17 @@ public abstract class AbstractLeague implements ILeague {
             applyMatchResult(match);
         }
 
+        // Oynayan oyuncuların maç sayısını artır
         for (ITeam team : teams) {
-            for (IPlayer player : team.getSquad()) {
-                player.decrementInjury();
+            for (IPlayer player : team.getStartingLineup()) {
+                player.incrementMatchesPlayed();
+            }
+        }
+
+        // Sakatları kadroda sağlıklı oyuncularla otomatik doldur
+        for (ITeam team : teams) {
+            if (team instanceof AbstractTeam) {
+                ((AbstractTeam) team).autoFixLineup();
             }
         }
 
@@ -91,17 +114,64 @@ public abstract class AbstractLeague implements ILeague {
     protected void generateFixtures() {
         fixtures.clear();
 
+        List<ITeam> rotationTeams = new ArrayList<>(teams);
+
+        if (rotationTeams.size() % 2 != 0) {
+            rotationTeams.add(null);
+        }
+
+        int numberOfTeams = rotationTeams.size();
+        int rounds = numberOfTeams - 1;
+        int matchesPerWeek = numberOfTeams / 2;
+
         int week = 1;
 
-        for (int i = 0; i < teams.size(); i++) {
-            for (int j = i + 1; j < teams.size(); j++) {
-                ITeam home = teams.get(i);
-                ITeam away = teams.get(j);
+        for (int round = 0; round < rounds; round++) {
+            for (int matchIndex = 0; matchIndex < matchesPerWeek; matchIndex++) {
+                ITeam home = rotationTeams.get(matchIndex);
+                ITeam away = rotationTeams.get(numberOfTeams - 1 - matchIndex);
 
-                fixtures.add(createMatch(home, away, week++));
-                fixtures.add(createMatch(away, home, week++));
+                if (home != null && away != null) {
+                    fixtures.add(createMatch(home, away, week));
+                }
             }
+
+            rotateTeams(rotationTeams);
+            week++;
         }
+
+        int firstHalfFixtureCount = fixtures.size();
+
+        for (int i = 0; i < firstHalfFixtureCount; i++) {
+            IMatch firstLeg = fixtures.get(i);
+
+            ITeam home = firstLeg.getAwayTeam();
+            ITeam away = firstLeg.getHomeTeam();
+
+            int reverseWeek = getWeekOfMatch(firstLeg) + rounds;
+
+            fixtures.add(createMatch(home, away, reverseWeek));
+        }
+    }
+
+    private void rotateTeams(List<ITeam> rotationTeams) {
+        if (rotationTeams.size() <= 2) {
+            return;
+        }
+
+        ITeam fixedTeam = rotationTeams.get(0);
+        ITeam lastTeam = rotationTeams.remove(rotationTeams.size() - 1);
+
+        rotationTeams.add(1, lastTeam);
+        rotationTeams.set(0, fixedTeam);
+    }
+
+    private int getWeekOfMatch(IMatch match) {
+        if (match instanceof AbstractMatch) {
+            AbstractMatch abstractMatch = (AbstractMatch) match;
+            return abstractMatch.getWeek();
+        }
+        return 0;
     }
 
     protected int calculateTotalWeeks() {
@@ -115,7 +185,63 @@ public abstract class AbstractLeague implements ILeague {
         return maxWeek;
     }
 
+    public void setCurrentWeek(int currentWeek) {
+        this.currentWeek = currentWeek;
+    }
+
+    public void setCurrentSeason(int currentSeason) {
+        this.currentSeason = Math.max(1, currentSeason);
+    }
+
+    public void resetSeason() {
+        for (ITeam team : teams) {
+            team.resetPoints();
+            for (IPlayer player : team.getSquad()) {
+                player.setInjured(0);
+                player.setForm(1);
+                player.growOlder();
+            }
+        }
+        currentSeason++;           // ← YENİ: sezon numarasını artır
+        currentWeek = 1;
+        generateFixtures();
+        totalWeeks = calculateTotalWeeks();
+    }
+
     protected abstract IMatch createMatch(ITeam home, ITeam away, int week);
 
     protected abstract void applyMatchResult(IMatch match);
+
+    public int getWins(ITeam team) {
+        int wins = 0;
+        for (IMatch match : fixtures) {
+            MatchResult result = match.getResult();
+            if (result == null) continue;
+            if (result.getHomeTeam().equals(team) && result.getHomeScore() > result.getAwayScore()) wins++;
+            else if (result.getAwayTeam().equals(team) && result.getAwayScore() > result.getHomeScore()) wins++;
+        }
+        return wins;
+    }
+
+    public int getDraws(ITeam team) {
+        int draws = 0;
+        for (IMatch match : fixtures) {
+            MatchResult result = match.getResult();
+            if (result == null) continue;
+            if ((result.getHomeTeam().equals(team) || result.getAwayTeam().equals(team))
+                    && result.getHomeScore() == result.getAwayScore()) draws++;
+        }
+        return draws;
+    }
+
+    public int getLosses(ITeam team) {
+        int losses = 0;
+        for (IMatch match : fixtures) {
+            MatchResult result = match.getResult();
+            if (result == null) continue;
+            if (result.getHomeTeam().equals(team) && result.getHomeScore() < result.getAwayScore()) losses++;
+            else if (result.getAwayTeam().equals(team) && result.getAwayScore() < result.getHomeScore()) losses++;
+        }
+        return losses;
+    }
 }

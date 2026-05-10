@@ -24,13 +24,18 @@ public class FootballMatch extends AbstractMatch {
 
         result = new MatchResult(homeTeam, awayTeam, homeScore, awayScore);
 
-        fireEvent("Kick-off: " + homeTeam.getName() + " vs " + awayTeam.getName());
-        fireEvent("Full Time: " + result.toString());
+        fireEvent("Mac basladi: " + homeTeam.getName() + " vs " + awayTeam.getName());
+        fireEvent("Mac bitti: " + result.toString());
     }
 
     private int simulateTeamScore(ITeam attackingTeam, ITeam defendingTeam) {
         double attackPower = calculateAttackPower(attackingTeam);
         double defensePower = calculateDefensePower(defendingTeam);
+
+        // Ev sahibi avantajı: %5 attack bonusu
+        if (attackingTeam.equals(homeTeam)) {
+            attackPower *= 1.05;
+        }
 
         double raw = (attackPower / defensePower) * 2.0;
         int score = (int) Math.round(raw + random.nextDouble());
@@ -53,9 +58,10 @@ public class FootballMatch extends AbstractMatch {
 
         double total = 0;
         for (IPlayer player : lineup) {
-            total += player.getAttributes().getOrDefault("shooting", 50);
-            total += player.getAttributes().getOrDefault("pace", 50);
-            total += player.getAttributes().getOrDefault("passing", 50);
+            double formMult = getFormMultiplier(player);
+            total += player.getAttributes().getOrDefault("shooting", 50) * formMult;
+            total += player.getAttributes().getOrDefault("pace", 50) * formMult;
+            total += player.getAttributes().getOrDefault("passing", 50) * formMult;
         }
 
         ITactic tactic = team.getTactic();
@@ -74,9 +80,10 @@ public class FootballMatch extends AbstractMatch {
 
         double total = 0;
         for (IPlayer player : lineup) {
-            total += player.getAttributes().getOrDefault("defending", 50);
-            total += player.getAttributes().getOrDefault("heading", 50);
-            total += player.getAttributes().getOrDefault("stamina", 50);
+            double formMult = getFormMultiplier(player);
+            total += player.getAttributes().getOrDefault("defending", 50) * formMult;
+            total += player.getAttributes().getOrDefault("heading", 50) * formMult;
+            total += player.getAttributes().getOrDefault("stamina", 50) * formMult;
         }
 
         ITactic tactic = team.getTactic();
@@ -99,8 +106,17 @@ public class FootballMatch extends AbstractMatch {
             if (chance < 3) {
                 int games = 1 + random.nextInt(4);
                 player.setInjured(games);
-                fireEvent(player.getName() + " got injured for " + games + " game(s).");
+                fireEvent(player.getName() + " " + games + " maclig sakatlandi.");
             }
+        }
+    }
+
+    private double getFormMultiplier(IPlayer player) {
+        switch (player.getForm()) {
+            case 0: return 0.85;  // Bad
+            case 2: return 1.10;  // Good
+            case 3: return 1.20;  // Excellent
+            default: return 1.00; // Normal
         }
     }
 }

@@ -60,24 +60,32 @@ public abstract class AbstractTeam implements ITeam {
         this.tactic = tactic;
     }
 
-    @Override
-    public void substitutePlayer(IPlayer out, IPlayer in) {
-        if (out == null || in == null) {
-            return;
-        }
-        if (!startingLineup.contains(out)) {
-            return;
-        }
-        if (!squad.contains(in)) {
-            return;
-        }
-        if (in.isInjured()) {
-            return;
-        }
-
-        int index = startingLineup.indexOf(out);
-        startingLineup.set(index, in);
+@Override
+public void substitutePlayer(IPlayer out, IPlayer in) {
+    if (out == null || in == null) {
+        return;
     }
+    if (!startingLineup.contains(out)) {
+        return;
+    }
+    if (!squad.contains(in)) {
+        return;
+    }
+    if (startingLineup.contains(in)) {
+        return;
+    }
+    if (in.isInjured()) {
+        return;
+    }
+
+    List<IPlayer> candidateLineup = new ArrayList<>(startingLineup);
+    int index = candidateLineup.indexOf(out);
+    candidateLineup.set(index, in);
+
+    if (validateLineup(candidateLineup)) {
+        this.startingLineup = candidateLineup;
+    }
+}
 
     @Override
     public void addPoints(int points) {
@@ -112,6 +120,76 @@ public abstract class AbstractTeam implements ITeam {
         if (validateLineup(lineup)) {
             this.startingLineup = new ArrayList<>(lineup);
         }
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    @Override
+    public void resetPoints() {
+        this.points = 0;
+    }
+
+    @Override
+    public int getTeamOverallRating() {
+        List<IPlayer> lineup = startingLineup.isEmpty() ? squad : startingLineup;
+        if (lineup.isEmpty()) return 0;
+        int sum = 0;
+        for (IPlayer player : lineup) {
+            sum += player.getOverallRating();
+        }
+        return sum / lineup.size();
+    }
+
+    public void clearSquad() {
+        this.squad.clear();
+        this.startingLineup.clear();
+    }
+
+    public void clearStartingLineup() {
+        this.startingLineup.clear();
+    }
+
+    public void autoFixLineup() {
+        List<IPlayer> currentLineup = new ArrayList<>(startingLineup);
+        boolean changed = false;
+
+        for (int i = 0; i < currentLineup.size(); i++) {
+            IPlayer player = currentLineup.get(i);
+            if (player.isInjured()) {
+                // First try to find a position-matched bench player
+                IPlayer replacement = findHealthyBenchPlayer(player.getPosition(), currentLineup);
+                // Fall back to any healthy bench player if no positional match
+                if (replacement == null) {
+                    replacement = findHealthyBenchPlayer(null, currentLineup);
+                }
+                if (replacement != null) {
+                    currentLineup.set(i, replacement);
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed && validateLineup(currentLineup)) {
+            this.startingLineup = currentLineup;
+        }
+    }
+
+    /**
+     * Finds a healthy bench player (not in {@code currentLineup}).
+     * If {@code requiredPosition} is non-null, only players matching that
+     * position are considered; otherwise any healthy bench player is returned.
+     */
+    private IPlayer findHealthyBenchPlayer(String requiredPosition, List<IPlayer> currentLineup) {
+        for (IPlayer player : squad) {
+            if (!player.isInjured() && !currentLineup.contains(player)) {
+                if (requiredPosition == null || requiredPosition.equals(player.getPosition())) {
+                    return player;
+                }
+            }
+        }
+        return null;
     }
 
     public abstract boolean validateLineup(List<IPlayer> chosen);

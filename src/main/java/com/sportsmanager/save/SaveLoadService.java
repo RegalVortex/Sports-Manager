@@ -1,0 +1,285 @@
+package com.sportsmanager.save;
+
+import com.sportsmanager.core.*;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class SaveLoadService {
+
+    private static final File SAVE_DIR = new File(System.getProperty("user.home"), ".sports-manager/saves");
+
+    public static void saveGame(String filePath, ISport sport, ILeague league, ITeam playerTeam) {
+        saveGameResult(filePath, sport, league, playerTeam);
+    }
+
+    public static boolean saveGameResult(String filePath, ISport sport, ILeague league, ITeam playerTeam) {
+        GameSaveData data = createSaveData(sport, league, playerTeam);
+        File target = resolveSaveFile(filePath);
+        File parent = target.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            System.out.println("Kayit basarisiz: kayit klasoru olusturulamadi " + parent);
+            return false;
+        }
+
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(target))) {
+            out.writeObject(data);
+            System.out.println("Oyun kaydedildi: " + target.getAbsolutePath());
+            return true;
+        } catch (IOException e) {
+            System.out.println("Kayit basarisiz: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static LoadedGame loadGame(String filePath, SportRegistry registry) {
+        File target = resolveSaveFile(filePath);
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(target))) {
+            GameSaveData data = (GameSaveData) in.readObject();
+            return rebuildGame(data, registry);
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Yukleme basarisiz: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public static File resolveSaveFile(String filePath) {
+        File file = new File(filePath);
+        if (file.isAbsolute() || filePath.startsWith("/") || filePath.startsWith("\\")) {
+            return file;
+        }
+        return new File(SAVE_DIR, filePath);
+    }
+
+    private static GameSaveData createSaveData(ISport sport, ILeague league, ITeam playerTeam) {
+        List<SavedTeam> savedTeams = new ArrayList<>();
+
+        for (ITeam team : league.getTeams()) {
+            List<SavedPlayer> savedPlayers = new ArrayList<>();
+
+            for (IPlayer player : team.getSquad()) {
+                SavedPlayer savedPlayer = new SavedPlayer(
+                        player.getName(),
+                        player.getPosition(),
+                        player.getAttributes(),
+                        player.isInjured(),
+                        player.getInjuryGamesRemaining(),
+                        player.getForm(),
+                        player.getAge(),
+                        player.getPotential(),
+                        player.getMatchesPlayed(),
+                        player.getWeeksInjured(),
+                        player.getGoalsScored(),
+                        team.getStartingLineup().contains(player),
+                        team.getStartingLineup().indexOf(player)
+                );
+                savedPlayers.add(savedPlayer);
+            }
+
+            SavedTeam savedTeam = new SavedTeam(
+                    team.getName(),
+                    team.getPoints(),
+                    team.getCoach() != null ? team.getCoach().getName() : "",
+                    team.getCoach() != null ? team.getCoach().getSpecialty() : "",
+                    team.getTactic() != null ? team.getTactic().getName() : "",
+                    savedPlayers
+            );
+
+            savedTeams.add(savedTeam);
+        }
+
+        List<SavedMatch> savedMatches = new ArrayList<>();
+
+        for (IMatch match : league.getAllFixtures()) {
+            int week = 0;
+            if (match instanceof AbstractMatch) {
+                week = ((AbstractMatch) match).getWeek();
+            }
+
+            MatchResult result = match.getResult();
+
+            SavedMatch savedMatch = new SavedMatch(
+                    week,
+                    match.getHomeTeam().getName(),
+                    match.getAwayTeam().getName(),
+                    result != null ? result.getHomeScore() : 0,
+                    result != null ? result.getAwayScore() : 0,
+                    match.isPlayed()
+            );
+
+            savedMatches.add(savedMatch);
+        }
+
+        return new GameSaveData(
+                sport.getSportName(),
+                league.getName(),
+                playerTeam.getName(),
+                league.getCurrentWeek(),
+                league.getCurrentSeason(),
+                savedTeams,
+                savedMatches
+        );
+    }
+
+    private static LoadedGame rebuildGame(GameSaveData data, SportRegistry registry) {
+        SportFactory factory = registry.getFactory(data.getSportName());
+
+        if (factory == null) {
+            throw new IllegalArgumentException("Kayit dosyasinda bilinmeyen spor: " + data.getSportName());
+        }
+
+        ISport sport = factory.createSport();
+
+        List<ITeam> teams = new ArrayList<>();
+        ITeam playerTeam = null;
+
+        for (SavedTeam savedTeam : data.getTeams()) {
+            ITeam team = factory.createTeam(savedTeam.getName(), savedTeam.getName() + ".png");
+
+            if (team instanceof AbstractTeam) {
+                AbstractTeam abstractTeam = (AbstractTeam) team;
+
+                abstractTeam.clearSquad();
+                List<IPlayer> restoredLineup = new ArrayList<>();
+                int expectedLineupSize = sport.getTeamSize();
+                for (int i = 0; i < expectedLineupSize; i++) {
+                    restoredLineup.add(null);
+                }
+
+                for (SavedPlayer savedPlayer : savedTeam.getPlayers()) {
+                    IPlayer player = factory.createPlayer(savedPlayer.getName(), savedPlayer.getPosition());
+
+                    player.getAttributes().clear();
+
+                    for (Map.Entry<String, Integer> entry : savedPlayer.getAttributes().entrySet()) {
+                        player.getAttributes().put(entry.getKey(), entry.getValue());
+                    }
+
+                    if (savedPlayer.isInjured()) {
+                        player.setInjured(savedPlayer.getInjuryGamesRemaining());
+                    } else {
+                        player.setInjured(0);
+                    }
+                    player.setForm(savedPlayer.getForm());
+
+                    if (player instanceof AbstractPlayer) {
+                        AbstractPlayer abstractPlayer = (AbstractPlayer) player;
+                        abstractPlayer.setAge(savedPlayer.getAge());
+                        abstractPlayer.setPotential(savedPlayer.getPotential());
+                        abstractPlayer.setMatchesPlayed(savedPlayer.getMatchesPlayed());
+                        abstractPlayer.setWeeksInjured(savedPlayer.getWeeksInjured());
+                        abstractPlayer.setGoalsScored(savedPlayer.getGoalsScored());
+                    }
+
+                    abstractTeam.addPlayerToSquad(player);
+                    int lineupIndex = savedPlayer.getStartingLineupIndex();
+                    if (savedPlayer.isInStartingLineup()
+                            && lineupIndex >= 0
+                            && lineupIndex < expectedLineupSize
+                            && !player.isInjured()) {
+                        restoredLineup.set(lineupIndex, player);
+                    }
+                }
+
+                List<IPlayer> orderedLineup = new ArrayList<>();
+                for (IPlayer player : restoredLineup) {
+                    if (player != null) {
+                        orderedLineup.add(player);
+                    }
+                }
+
+                if (!orderedLineup.isEmpty()) {
+                    abstractTeam.setStartingLineup(orderedLineup);
+                }
+
+                if (abstractTeam.getStartingLineup().isEmpty()) {
+                    List<IPlayer> lineup = new ArrayList<>();
+                    int teamSize = sport.getTeamSize();
+
+                    for (IPlayer player : abstractTeam.getSquad()) {
+                        if (lineup.size() >= teamSize) {
+                            break;
+                        }
+                        if (!player.isInjured()) {
+                            lineup.add(player);
+                        }
+                    }
+
+                    abstractTeam.setStartingLineup(lineup);
+                }
+                abstractTeam.setPoints(savedTeam.getPoints());
+                abstractTeam.setCoach(factory.createCoach(savedTeam.getCoachName(), savedTeam.getCoachSpecialty()));
+                abstractTeam.setTactic(resolveTactic(factory, savedTeam.getTacticName()));
+            }
+
+            teams.add(team);
+
+            if (savedTeam.getName().equalsIgnoreCase(data.getPlayerTeamName())) {
+                playerTeam = team;
+            }
+        }
+
+        ILeague league = factory.createLeague(data.getLeagueName(), teams);
+
+        if (league instanceof AbstractLeague) {
+            AbstractLeague abstractLeague = (AbstractLeague) league;
+            abstractLeague.setCurrentWeek(data.getCurrentWeek());
+            abstractLeague.setCurrentSeason(data.getCurrentSeason());
+        }
+
+        restoreMatches(data, league);
+
+        return new LoadedGame(sport, league, playerTeam);
+    }
+
+    /**
+     * Kaydedilen taktik adını factory'nin mevcut taktikleri içinde arar.
+     * Bulamazsa varsayılan taktiği döndürür.
+     */
+    private static ITactic resolveTactic(SportFactory factory, String tacticName) {
+        if (tacticName == null || tacticName.isEmpty()) {
+            return factory.createDefaultTactic();
+        }
+        for (ITactic tactic : factory.getAvailableTactics()) {
+            if (tactic.getName().equalsIgnoreCase(tacticName)) {
+                return tactic;
+            }
+        }
+        // Kayıtlı isim bulunamadıysa varsayılana dön
+        return factory.createDefaultTactic();
+    }
+
+    private static void restoreMatches(GameSaveData data, ILeague league) {
+        for (SavedMatch savedMatch : data.getMatches()) {
+            if (!savedMatch.isPlayed()) {
+                continue;
+            }
+
+            for (IMatch match : league.getAllFixtures()) {
+                boolean sameWeek = false;
+
+                if (match instanceof AbstractMatch) {
+                    sameWeek = ((AbstractMatch) match).getWeek() == savedMatch.getWeek();
+                }
+
+                boolean sameTeams =
+                        match.getHomeTeam().getName().equals(savedMatch.getHomeTeamName()) &&
+                                match.getAwayTeam().getName().equals(savedMatch.getAwayTeamName());
+
+                if (sameWeek && sameTeams && match instanceof AbstractMatch) {
+                    MatchResult result = new MatchResult(
+                            match.getHomeTeam(),
+                            match.getAwayTeam(),
+                            savedMatch.getHomeScore(),
+                            savedMatch.getAwayScore()
+                    );
+
+                    ((AbstractMatch) match).restoreResult(result);
+                    break;
+                }
+            }
+        }
+    }
+}

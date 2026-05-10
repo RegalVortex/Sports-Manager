@@ -95,6 +95,7 @@ public final void simulate() {
     played = true;
     notifyListeners();
 }
+
     protected void updatePlayerForm(ITeam team) {
     java.util.Random random = new java.util.Random();
 
@@ -105,17 +106,37 @@ public final void simulate() {
 
         if (roll < 30 && oldForm > 0) {
             player.setForm(oldForm - 1);
-            fireEvent(player.getName() + " form dropped to " + player.getFormLabel());
+            fireEvent(player.getName() + " formu dustu: " + turkishFormLabel(player));
         }
 
         else if (roll > 70 && oldForm < 3) {
             player.setForm(oldForm + 1);
-            fireEvent(player.getName() + " form improved to " + player.getFormLabel());
+            fireEvent(player.getName() + " formu yukseldi: " + turkishFormLabel(player));
         }
     }
 }
-    
+
     protected abstract void simulateMatch();
+
+    private String turkishFormLabel(IPlayer player) {
+        switch (player.getForm()) {
+            case 0:
+                return "Kotu";
+            case 2:
+                return "Iyi";
+            case 3:
+                return "Harika";
+            default:
+                return "Normal";
+        }
+    }
+
+
+
+    public void restoreResult(MatchResult result) {
+        this.result = result;
+        this.played = true;
+    }
 
     protected abstract void applyInjuries();
 }

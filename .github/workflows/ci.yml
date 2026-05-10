@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ main, master, m3-development ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (Java 11)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+
+      # JavaFX scenes require a display; exclude them in headless CI.
+      # The console UI (ui/console/**) has no display dependency and IS included.
+      - name: Build (compile all sources)
+        run: mvn compile --no-transfer-progress
+
+      - name: Run tests (non-JavaFX)
+        run: |
+          mvn test --no-transfer-progress \
+            -Djava.awt.headless=true \
+            -Dtest="!**/ui/scenes/**,!**/ui/App*,!**/ui/SceneManager*" \
+            -pl .
+
+      - name: Upload JaCoCo coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          retention-days: 14
+
+      - name: Checkstyle report (warnings only, non-blocking)
+        run: mvn checkstyle:checkstyle --no-transfer-progress || true
+
+      - name: Upload Checkstyle report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-report
+          path: target/site/checkstyle.html
+          retention-days: 14
