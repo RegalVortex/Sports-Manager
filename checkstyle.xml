@@ -27,6 +27,11 @@
         <property name="message" value="Line has trailing spaces."/>
     </module>
 
+    <module name="LineLength">
+        <property name="max" value="140"/>
+        <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+    </module>
+
     <module name="TreeWalker">
 
         <!-- Imports -->
@@ -50,12 +55,6 @@
         <module name="SimplifyBooleanReturn"/>
         <module name="StringLiteralEquality"/>  <!-- Use .equals(), not == -->
         <module name="EqualsHashCode"/>         <!-- Override both or neither -->
-
-        <!-- Line length — allow up to 140 chars (realistic for Java) -->
-        <module name="LineLength">
-            <property name="max" value="140"/>
-            <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
-        </module>
 
     </module>
 </module>

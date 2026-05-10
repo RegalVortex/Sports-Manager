@@ -10,13 +10,19 @@ import java.util.Map;
 public class SaveLoadService {
 
     public static void saveGame(String filePath, ISport sport, ILeague league, ITeam playerTeam) {
+        saveGameResult(filePath, sport, league, playerTeam);
+    }
+
+    public static boolean saveGameResult(String filePath, ISport sport, ILeague league, ITeam playerTeam) {
         GameSaveData data = createSaveData(sport, league, playerTeam);
 
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
             out.writeObject(data);
             System.out.println("Game saved successfully: " + filePath);
+            return true;
         } catch (IOException e) {
             System.out.println("Save failed: " + e.getMessage());
+            return false;
         }
     }
 
@@ -47,7 +53,10 @@ public class SaveLoadService {
                         player.getAge(),
                         player.getPotential(),
                         player.getMatchesPlayed(),
-                        player.getWeeksInjured()
+                        player.getWeeksInjured(),
+                        player.getGoalsScored(),
+                        team.getStartingLineup().contains(player),
+                        team.getStartingLineup().indexOf(player)
                 );
                 savedPlayers.add(savedPlayer);
             }
@@ -116,6 +125,11 @@ public class SaveLoadService {
                 AbstractTeam abstractTeam = (AbstractTeam) team;
 
                 abstractTeam.clearSquad();
+                List<IPlayer> restoredLineup = new ArrayList<>();
+                int expectedLineupSize = sport.getTeamSize();
+                for (int i = 0; i < expectedLineupSize; i++) {
+                    restoredLineup.add(null);
+                }
 
                 for (SavedPlayer savedPlayer : savedTeam.getPlayers()) {
                     IPlayer player = factory.createPlayer(savedPlayer.getName(), savedPlayer.getPosition());
@@ -139,24 +153,45 @@ public class SaveLoadService {
                         abstractPlayer.setPotential(savedPlayer.getPotential());
                         abstractPlayer.setMatchesPlayed(savedPlayer.getMatchesPlayed());
                         abstractPlayer.setWeeksInjured(savedPlayer.getWeeksInjured());
+                        abstractPlayer.setGoalsScored(savedPlayer.getGoalsScored());
                     }
 
                     abstractTeam.addPlayerToSquad(player);
-                }
-
-                List<IPlayer> lineup = new ArrayList<>();
-                int teamSize = sport.getTeamSize();
-
-                for (IPlayer player : abstractTeam.getSquad()) {
-                    if (lineup.size() >= teamSize) {
-                        break;
-                    }
-                    if (!player.isInjured()) {
-                        lineup.add(player);
+                    int lineupIndex = savedPlayer.getStartingLineupIndex();
+                    if (savedPlayer.isInStartingLineup()
+                            && lineupIndex >= 0
+                            && lineupIndex < expectedLineupSize
+                            && !player.isInjured()) {
+                        restoredLineup.set(lineupIndex, player);
                     }
                 }
 
-                abstractTeam.setStartingLineup(lineup);
+                List<IPlayer> orderedLineup = new ArrayList<>();
+                for (IPlayer player : restoredLineup) {
+                    if (player != null) {
+                        orderedLineup.add(player);
+                    }
+                }
+
+                if (!orderedLineup.isEmpty()) {
+                    abstractTeam.setStartingLineup(orderedLineup);
+                }
+
+                if (abstractTeam.getStartingLineup().isEmpty()) {
+                    List<IPlayer> lineup = new ArrayList<>();
+                    int teamSize = sport.getTeamSize();
+
+                    for (IPlayer player : abstractTeam.getSquad()) {
+                        if (lineup.size() >= teamSize) {
+                            break;
+                        }
+                        if (!player.isInjured()) {
+                            lineup.add(player);
+                        }
+                    }
+
+                    abstractTeam.setStartingLineup(lineup);
+                }
                 abstractTeam.setPoints(savedTeam.getPoints());
                 abstractTeam.setCoach(factory.createCoach(savedTeam.getCoachName(), savedTeam.getCoachSpecialty()));
                 abstractTeam.setTactic(resolveTactic(factory, savedTeam.getTacticName()));

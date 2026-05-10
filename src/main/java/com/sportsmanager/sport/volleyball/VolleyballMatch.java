@@ -23,7 +23,7 @@ public class VolleyballMatch extends AbstractMatch {
         int awaySets = 0;
         int setNumber = 1;
 
-        fireEvent("Match Start: " + homeTeam.getName() + " vs " + awayTeam.getName());
+        fireEvent("Mac basladi: " + homeTeam.getName() + " vs " + awayTeam.getName());
 
         while (homeSets < 3 && awaySets < 3) {
             int[] setScore = simulateSet(homeTeam, awayTeam, homeSets == 2 && awaySets == 2);
@@ -37,14 +37,14 @@ public class VolleyballMatch extends AbstractMatch {
                 awaySets++;
             }
 
-            fireEvent("Set " + setNumber + ": " + homeTeam.getName() + " " + homePoints +
+            fireEvent(setNumber + ". set: " + homeTeam.getName() + " " + homePoints +
                     " - " + awayPoints + " " + awayTeam.getName());
 
             setNumber++;
         }
 
         result = new MatchResult(homeTeam, awayTeam, homeSets, awaySets);
-        fireEvent("Full Time: " + result.toString());
+        fireEvent("Mac bitti: " + result.toString());
     }
 
 
@@ -134,7 +134,7 @@ public class VolleyballMatch extends AbstractMatch {
             if (chance < 2) {
                 int games = 1 + random.nextInt(3);
                 player.setInjured(games);
-                fireEvent(player.getName() + " got injured for " + games + " game(s).");
+                fireEvent(player.getName() + " " + games + " maclig sakatlandi.");
             }
         }
     }

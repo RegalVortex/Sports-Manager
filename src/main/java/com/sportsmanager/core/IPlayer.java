@@ -37,5 +37,12 @@ public interface IPlayer {
     int getWeeksInjured();
     void incrementMatchesPlayed();
 
+    default int getGoalsScored() {
+        return 0;
+    }
+
+    default void incrementGoalsScored() {
+    }
+
 
 }

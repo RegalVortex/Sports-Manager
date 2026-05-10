@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SavedPlayer implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String name;
     private String position;
@@ -16,6 +17,9 @@ public class SavedPlayer implements Serializable {
     private int potential;
     private int matchesPlayed;
     private int weeksInjured;
+    private int goalsScored;
+    private boolean inStartingLineup;
+    private int startingLineupIndex;
 
     public SavedPlayer(String name,
                        String position,
@@ -26,7 +30,10 @@ public class SavedPlayer implements Serializable {
                        int age,
                        int potential,
                        int matchesPlayed,
-                       int weeksInjured) {
+                       int weeksInjured,
+                       int goalsScored,
+                       boolean inStartingLineup,
+                       int startingLineupIndex) {
         this.name = name;
         this.position = position;
         this.attributes = new HashMap<>(attributes);
@@ -37,6 +44,9 @@ public class SavedPlayer implements Serializable {
         this.potential = potential;
         this.matchesPlayed = matchesPlayed;
         this.weeksInjured = weeksInjured;
+        this.goalsScored = goalsScored;
+        this.inStartingLineup = inStartingLineup;
+        this.startingLineupIndex = startingLineupIndex;
     }
 
     public String getName()                  { return name; }
@@ -49,4 +59,7 @@ public class SavedPlayer implements Serializable {
     public int getPotential()                { return potential; }
     public int getMatchesPlayed()            { return matchesPlayed; }
     public int getWeeksInjured()             { return weeksInjured; }
+    public int getGoalsScored()              { return goalsScored; }
+    public boolean isInStartingLineup()      { return inStartingLineup; }
+    public int getStartingLineupIndex()      { return startingLineupIndex; }
 }

@@ -24,8 +24,8 @@ public class FootballMatch extends AbstractMatch {
 
         result = new MatchResult(homeTeam, awayTeam, homeScore, awayScore);
 
-        fireEvent("Kick-off: " + homeTeam.getName() + " vs " + awayTeam.getName());
-        fireEvent("Full Time: " + result.toString());
+        fireEvent("Mac basladi: " + homeTeam.getName() + " vs " + awayTeam.getName());
+        fireEvent("Mac bitti: " + result.toString());
     }
 
     private int simulateTeamScore(ITeam attackingTeam, ITeam defendingTeam) {
@@ -106,7 +106,7 @@ public class FootballMatch extends AbstractMatch {
             if (chance < 3) {
                 int games = 1 + random.nextInt(4);
                 player.setInjured(games);
-                fireEvent(player.getName() + " got injured for " + games + " game(s).");
+                fireEvent(player.getName() + " " + games + " maclig sakatlandi.");
             }
         }
     }

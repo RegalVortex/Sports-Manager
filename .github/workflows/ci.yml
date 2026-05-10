@@ -22,17 +22,16 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # JavaFX is not available in a headless CI environment.
-      # We compile everything but run only the non-UI tests by
-      # excluding packages that require a display.
+      # JavaFX scenes require a display; exclude them in headless CI.
+      # The console UI (ui/console/**) has no display dependency and IS included.
       - name: Build (compile all sources)
         run: mvn compile --no-transfer-progress
 
-      - name: Run tests (non-UI)
+      - name: Run tests (non-JavaFX)
         run: |
           mvn test --no-transfer-progress \
             -Djava.awt.headless=true \
-            -Dtest="!**/ui/**" \
+            -Dtest="!**/ui/scenes/**,!**/ui/App*,!**/ui/SceneManager*" \
             -pl .
 
       - name: Upload JaCoCo coverage report

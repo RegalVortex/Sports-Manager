@@ -3,6 +3,7 @@ package com.sportsmanager.save;
 import java.io.Serializable;
 
 public class SavedMatch implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private int week;
     private String homeTeamName;

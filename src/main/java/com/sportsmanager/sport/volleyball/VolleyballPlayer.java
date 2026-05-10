@@ -144,6 +144,10 @@ public class VolleyballPlayer extends AbstractPlayer {
 
     /** Geriye dönük uyumluluk — isim artık görmezden gelinir. */
     public static VolleyballPlayer generateRandom(String position, String name) {
-        return generateRandom(position);
+        VolleyballPlayer player = generateRandom(position);
+        if (name != null && !name.isBlank()) {
+            player.name = name;
+        }
+        return player;
     }
 }

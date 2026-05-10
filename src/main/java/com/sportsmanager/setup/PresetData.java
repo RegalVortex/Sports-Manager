@@ -21,7 +21,7 @@ public class PresetData {
                     "football",
                     "Avrupa Futbol Ligi",
                     Arrays.asList("Madrid FC", "London United", "Milan City", "Paris Stars",
-                                  "Bayern Munchen", "Ajax Amsterdam", "Porto FC", "Celtic FC")
+                                  "Bayern Münih", "Ajax Amsterdam", "Porto FC", "Celtic FC")
             ));
         }
 

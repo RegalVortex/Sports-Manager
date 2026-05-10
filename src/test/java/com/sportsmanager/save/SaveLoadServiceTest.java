@@ -4,6 +4,7 @@ import com.sportsmanager.core.ILeague;
 import com.sportsmanager.core.IPlayer;
 import com.sportsmanager.core.ISport;
 import com.sportsmanager.core.ITeam;
+import com.sportsmanager.core.AbstractTeam;
 import com.sportsmanager.core.SportRegistry;
 import com.sportsmanager.sport.football.FootballSportFactory;
 import com.sportsmanager.sport.football.FootballTactic;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -210,5 +212,60 @@ class SaveLoadServiceTest {
         assertNotNull(loaded);
         assertEquals(3, loaded.getLeague().getCurrentSeason(),
                 "currentSeason should be 3 after restore");
+    }
+
+    @Test
+    void startingLineupShouldBeRestoredAfterSaveAndLoad() {
+        FootballSportFactory factory = new FootballSportFactory();
+        ISport sport = factory.createSport();
+
+        ITeam teamA = factory.createTeam("Galatasaray", "gala.png");
+        ITeam teamB = factory.createTeam("Fenerbahce", "fb.png");
+
+        List<IPlayer> customLineup = new ArrayList<>(teamA.getStartingLineup());
+        Collections.reverse(customLineup);
+        ((AbstractTeam) teamA).setStartingLineup(customLineup);
+
+        List<ITeam> teams = new ArrayList<>();
+        teams.add(teamA);
+        teams.add(teamB);
+
+        ILeague league = factory.createLeague("Test Lig", teams);
+        String savePath = tempDir.getAbsolutePath() + File.separator + "test_lineup.dat";
+        SaveLoadService.saveGame(savePath, sport, league, teamA);
+
+        LoadedGame loaded = SaveLoadService.loadGame(savePath, new SportRegistry());
+
+        assertNotNull(loaded);
+        List<IPlayer> restoredLineup = loaded.getPlayerTeam().getStartingLineup();
+        assertEquals(customLineup.size(), restoredLineup.size());
+        for (int i = 0; i < customLineup.size(); i++) {
+            assertEquals(customLineup.get(i).getName(), restoredLineup.get(i).getName());
+        }
+    }
+
+    @Test
+    void goalsScoredShouldBeRestoredAfterSaveAndLoad() {
+        FootballSportFactory factory = new FootballSportFactory();
+        ISport sport = factory.createSport();
+
+        ITeam teamA = factory.createTeam("Galatasaray", "gala.png");
+        ITeam teamB = factory.createTeam("Fenerbahce", "fb.png");
+        IPlayer scorer = teamA.getSquad().get(0);
+        scorer.incrementGoalsScored();
+        scorer.incrementGoalsScored();
+
+        List<ITeam> teams = new ArrayList<>();
+        teams.add(teamA);
+        teams.add(teamB);
+
+        ILeague league = factory.createLeague("Test Lig", teams);
+        String savePath = tempDir.getAbsolutePath() + File.separator + "test_goals.dat";
+        SaveLoadService.saveGame(savePath, sport, league, teamA);
+
+        LoadedGame loaded = SaveLoadService.loadGame(savePath, new SportRegistry());
+
+        assertNotNull(loaded);
+        assertEquals(2, loaded.getPlayerTeam().getSquad().get(0).getGoalsScored());
     }
 }

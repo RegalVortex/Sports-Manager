@@ -169,6 +169,10 @@ public class FootballPlayer extends AbstractPlayer {
 
     /** Geriye dönük uyumluluk — isim artık görmezden gelinir. */
     public static FootballPlayer generateRandom(String position, String name) {
-        return generateRandom(position);
+        FootballPlayer player = generateRandom(position);
+        if (name != null && !name.isBlank()) {
+            player.name = name;
+        }
+        return player;
     }
 }

@@ -68,6 +68,14 @@ public abstract class AbstractLeague implements ILeague {
             return;
         }
 
+        // Old injuries tick down at the start of a new week; fresh match injuries
+        // remain visible and unavailable after the match.
+        for (ITeam team : teams) {
+            for (IPlayer player : team.getSquad()) {
+                player.decrementInjury();
+            }
+        }
+
         for (ITeam team : teams) {
             ICoach coach = team.getCoach();
             if (coach != null) {
@@ -81,19 +89,10 @@ public abstract class AbstractLeague implements ILeague {
             applyMatchResult(match);
         }
 
-        // Sakatlık azalt (haftada BİR kez)
-        for (ITeam team : teams) {
-            for (IPlayer player : team.getSquad()) {
-                player.decrementInjury();
-            }
-        }
-
         // Oynayan oyuncuların maç sayısını artır
         for (ITeam team : teams) {
             for (IPlayer player : team.getStartingLineup()) {
-                if (!player.isInjured()) {
-                    player.incrementMatchesPlayed();
-                }
+                player.incrementMatchesPlayed();
             }
         }
 
